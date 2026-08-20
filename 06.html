@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第6章 网络与通信测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第6章 网络与通信测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="active">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="active">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>6、网络与通信测试：CAN/LIN总线测试、以太网（SOME/IP、DDS）测试、V2X通信测试</h2>
+
+<p>智能座舱里的通信，说白了就是各个电子控制单元之间的“对话”。如果对话不顺畅，轻则黑屏卡顿，重则车门打不开、空调不制冷。我这些年踩过的坑，有一半都跟通信协议有关。今天咱们就把CAN/LIN、车载以太网和V2X这三块掰开揉碎了讲。</p>
+
+<div class="highlight">
+  <p><strong>核心观点：</strong>网络通信测试不是简单的“通断测试”，而是要在不同负载、不同干扰下验证消息的实时性、完整性和安全性。你想想看，一个刹车信号如果延迟了100毫秒，后果是什么？</p>
+</div>
+
+<h3>6.1 CAN/LIN总线测试</h3>
+
+<p>CAN和LIN是座舱里最基础的“老伙计”。CAN负责动力、车身控制这类高实时性信号，LIN则管车窗、座椅这类低速设备。我习惯把CAN比作高速公路，LIN就是乡间小道。</p>
+
+<h4>6.1.1 物理层测试</h4>
+
+<p>物理层是通信的基石。很多莫名其妙的丢帧问题，最后查出来都是线束阻抗不匹配。</p>
+
+<ul>
+  <li><strong>终端电阻测量：</strong>CAN总线两端各需一个120Ω电阻。我建议用万用表在断开电源的情况下测量CAN_H与CAN_L之间的电阻，正常值应为60Ω（两个120Ω并联）。</li>
+  <li><strong>隐性/显性电平：</strong>用示波器抓取总线波形。隐性电平（逻辑1）约为2.5V，显性电平（逻辑0）CAN_H约3.5V、CAN_L约1.5V。如果电平偏差超过0.3V，就要检查收发器或线束了。</li>
+  <li><strong>位时间测量：</strong>用示波器测量一个位的时长。比如500kbps的CAN，位时间应为2μs。偏差超过5%就会导致同步错误。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>有一次项目在冬季路试时频繁报CAN通信超时。排查到最后，发现是低温导致线束插头轻微收缩，接触电阻变大。从那以后，我要求所有CAN测试必须在-40℃到85℃的温度箱里做一遍。</p>
+</div>
+
+<h4>6.1.2 数据链路层测试</h4>
+
+<p>这一层主要看报文格式对不对、ID优先级是否合理、有没有错误帧。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试项</th>
+      <th>测试方法</th>
+      <th>通过标准</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>报文ID唯一性</td>
+      <td>用CAN工具（如PCAN、CANoe）监听总线，统计所有ID</td>
+      <td>无重复ID，且符合DBC定义</td>
+    </tr>
+    <tr>
+      <td>周期报文抖动</td>
+      <td>记录连续100帧报文的时间戳，计算周期偏差</td>
+      <td>抖动≤10%标称周期</td>
+    </tr>
+    <tr>
+      <td>错误帧统计</td>
+      <td>连续运行24小时，统计错误帧数量</td>
+      <td>错误帧为0</td>
+    </tr>
+    <tr>
+      <td>总线负载率</td>
+      <td>在最大工况下测量总线占用率</td>
+      <td>CAN≤70%，LIN≤50%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>嗯，这里要注意：LIN的周期抖动容忍度比CAN大一些，因为LIN是主从架构，主节点控制调度。我曾经见过一个LIN从节点因为晶振偏差太大，导致主节点收不到正确响应，最后换了高精度晶振才解决。</p>
+
+<h4>6.1.3 网络管理测试</h4>
+
+<p>座舱里很多ECU需要休眠和唤醒。网络管理测试就是验证这些状态切换是否正常。</p>
+
+<ul>
+  <li><strong>休眠电流：</strong>所有节点进入休眠后，测量总线电流。CAN收发器休眠电流通常应＜100μA。</li>
+  <li><strong>唤醒源测试：</strong>分别用CAN报文唤醒、硬线唤醒、本地事件唤醒，验证节点能否在100ms内恢复正常通信。</li>
+  <li><strong>网络跳变：</strong>模拟节点反复休眠/唤醒1000次，看总线是否出现异常帧。</li>
+</ul>
+
+<div class="warning">
+  <p><strong>避坑指南：</strong>我曾经遇到一个项目，CAN网络在休眠后偶尔被误唤醒。查了三天，发现是某个传感器在电源波动时产生了毛刺，触发了收发器的唤醒逻辑。解决方案是在唤醒引脚上加一个RC滤波电路。</p>
+</div>
+
+<h3>6.2 车载以太网测试（SOME/IP、DDS）</h3>
+
+<p>随着座舱功能越来越复杂，CAN的带宽已经不够用了。车载以太网成了新宠，尤其是SOME/IP和DDS这两个中间件协议。我个人的看法是：SOME/IP适合传统面向服务的架构，DDS更适合需要高实时性的分布式系统。</p>
+
+<h4>6.2.1 物理层与链路层测试</h4>
+
+<p>车载以太网用的是100BASE-T1或1000BASE-T1，一对差分线就能跑。测试重点跟普通以太网不太一样。</p>
+
+<ul>
+  <li><strong>信号质量：</strong>用示波器测量MDI接口的差分信号。眼图测试是必须的——眼高应＞500mV，眼宽应＞80% UI（单位间隔）。</li>
+  <li><strong>线束衰减：</strong>用网络分析仪测量S参数。100BASE-T1要求插入损耗＜15dB@66MHz。</li>
+  <li><strong>PMA测试：</strong>包括发送器抖动、接收器灵敏度等。我建议直接用专用测试仪（如泰克或是德科技的方案）跑一遍自动化测试。</li>
+</ul>
+
+<h4>6.2.2 SOME/IP协议测试</h4>
+
+<p>SOME/IP是AUTOSAR标准的一部分，核心是服务发现和远程过程调用。</p>
+
+<p><strong>服务发现测试：</strong></p>
+<ol>
+  <li>启动服务提供者，发送OfferService报文。</li>
+  <li>启动服务消费者，发送FindService报文。</li>
+  <li>验证消费者能否在500ms内收到OfferService并建立连接。</li>
+  <li>模拟服务提供者离线，验证消费者能否在1s内检测到并触发Fallback。</li>
+</ol>
+
+<p><strong>RPC调用测试：</strong></p>
+<pre><code>// 示例：测试SOME/IP方法调用超时
+// 工具：vTESTstudio + CANoe
+testcase TC_SOMEIP_MethodTimeout()
+{
+  // 发送一个方法调用请求
+  someipRequest.MethodId = 0x1234;
+  someipRequest.Payload = [0x01, 0x02, 0x03];
+  ethernetSend(someipRequest);
+  
+  // 等待响应，超时设为100ms
+  waitEthernetFrame(100ms);
+  
+  // 如果没收到响应，验证是否触发了超时重试
+  if (ethernetFrameReceived == false) {
+    check(someipRequest.RetryCount == 3);
+    check(someipRequest.RetryInterval == 50ms);
+  }
+}
+</code></pre>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>SOME/IP测试最容易忽略的是“多播风暴”。如果多个服务提供者同时发送OfferService，可能导致交换机缓存溢出。我建议在测试环境中限制多播报文的发送速率，并验证交换机的IGMP Snooping功能是否正常。</p>
+</div>
+
+<h4>6.2.3 DDS协议测试</h4>
+
+<p>DDS（数据分发服务）以数据为中心，QoS策略是它的灵魂。测试DDS，说白了就是验证QoS配置是否生效。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>QoS策略</th>
+      <th>测试场景</th>
+      <th>验证方法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RELIABILITY</td>
+      <td>模拟网络丢包5%</td>
+      <td>RELIABLE模式下应无数据丢失，BEST_EFFORT模式允许丢包</td>
+    </tr>
+    <tr>
+      <td>DURABILITY</td>
+      <td>晚加入的订阅者</td>
+      <td>TRANSIENT_LOCAL模式下应收到历史数据</td>
+    </tr>
+    <tr>
+      <td>DEADLINE</td>
+      <td>发布者发送间隔超过设定值</td>
+      <td>订阅者应触发DEADLINE_MISSED_STATUS</td>
+    </tr>
+    <tr>
+      <td>LIVELINESS</td>
+      <td>发布者进程崩溃</td>
+      <td>订阅者应在lease_duration内检测到并移除实体</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>你想想看，如果ADAS系统用DDS传输障碍物信息，DEADLINE策略没配好，那后果就是——车都撞上了，数据还没到。所以DDS测试一定要覆盖所有QoS边界条件。</p>
+
+<h3>6.3 V2X通信测试</h3>
+
+<p>V2X（车联万物）是智能座舱的“千里眼”。它让车能跟周围的车、路、人、云说话。但V2X的测试环境搭建起来最头疼——你不能真的把车开到马路上测吧？</p>
+
+<h4>6.3.1 协议一致性测试</h4>
+
+<p>V2X的核心协议是IEEE 802.11p（DSRC）或C-V2X（基于LTE/NR）。一致性测试确保设备能正确解析和发送标准消息。</p>
+
+<ul>
+  <li><strong>BSM/Basic Safety Message：</strong>验证消息中的经纬度、速度、航向角等字段是否在合理范围内。</li>
+  <li><strong>SPAT/Signal Phase and Timing：</strong>验证信号灯相位和倒计时信息是否与模拟器一致。</li>
+  <li><strong>MAP/Map Data：</strong>验证车道级地图的拓扑关系是否正确。</li>
+</ul>
+
+<p>我建议用Keysight或Rohde & Schwarz的V2X测试仪，它们能模拟完整的场景。比如模拟一个十字路口，让被测设备在50km/h的速度下接收SPAT消息，验证它能否在红灯前及时触发预警。</p>
+
+<h4>6.3.2 通信性能测试</h4>
+
+<p>V2X对时延和可靠性要求极高。我见过一个项目，V2X模块在高速移动下丢包率飙升到30%，预警功能基本废了。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试指标</th>
+      <th>测试条件</th>
+      <th>通过标准</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>端到端时延</td>
+      <td>发送端到接收端，包含应用层处理</td>
+      <td>≤100ms（安全消息≤20ms）</td>
+    </tr>
+    <tr>
+      <td>丢包率</td>
+      <td>相对速度100km/h，距离300m</td>
+      <td>≤5%</td>
+    </tr>
+    <tr>
+      <td>通信距离</td>
+      <td>视距场景，天线高度1.5m</td>
+      <td>≥500m</td>
+    </tr>
+    <tr>
+      <td>多车并发</td>
+      <td>100辆车同时发送BSM</td>
+      <td>信道负载率≤50%</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>避坑指南：</strong>我曾经在V2X路测时发现，车辆经过高架桥下方时通信会中断3-5秒。原因是GPS信号丢失导致定位失效，V2X模块自动进入了安全模式。解决方案是增加惯性导航（IMU）作为定位补充，并在测试用例中增加“隧道/高架桥”场景。</p>
+</div>
+
+<h4>6.3.3 场景仿真测试</h4>
+
+<p>路测成本高、重复性差，所以我更推荐用仿真平台做大部分测试。常用的工具有CarMaker、VTD、或者开源的Carla+V2X插件。</p>
+
+<p><strong>典型测试场景：</strong></p>
+<ol>
+  <li><strong>前向碰撞预警：</strong>前车急刹，后车在2秒内收到预警。</li>
+  <li><strong>交叉路口碰撞预警：</strong>两车从垂直方向接近路口，系统在碰撞前3秒发出警告。</li>
+  <li><strong>紧急车辆预警：</strong>救护车接近，座舱内显示避让建议。</li>
+  <li><strong>绿波车速引导：</strong>根据前方信号灯相位，建议车速通过路口。</li>
+</ol>
+
+<p>嗯，这里要注意：仿真测试不能完全替代路测。我习惯的做法是“7:2:1”——70%仿真、20%封闭场地、10%开放道路。这样既保证覆盖率，又控制成本。</p>
+
+<!-- SVG: 网络与通信测试知识体系图 -->
+<svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:20px auto;">
+  <rect width="900" height="520" fill="#f0f8ff" rx="8"/>
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">网络与通信测试知识体系</text>
+  
+  <!-- 三大分支标题 -->
+  <rect x="50" y="70" width="240" height="40" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="170" y="96" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">CAN/LIN总线测试</text>
+  
+  <rect x="330" y="70" width="240" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="450" y="96" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">车载以太网测试</text>
+  
+  <rect x="610" y="70" width="240" height="40" rx="6" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="730" y="96" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">V2X通信测试</text>
+  
+  <!-- 连接线 -->
+  <line x1="170" y1="110" x2="170" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="450" y1="110" x2="450" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="730" y1="110" x2="730" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <!-- CAN/LIN子节点 -->
+  <rect x="30" y="140" width="130" height="36" rx="4" fill="#9b59b6" stroke="#8e44ad" stroke-width="1.5"/>
+  <text x="95" y="163" text-anchor="middle" font-size="13" fill="#ffffff">物理层测试</text>
+  
+  <rect x="180" y="140" width="130" height="36" rx="4" fill="#9b59b6" stroke="#8e44ad" stroke-width="1.5"/>
+  <text x="245" y="163" text-anchor="middle" font-size="13" fill="#ffffff">数据链路层测试</text>
+  
+  <rect x="105" y="200" width="130" height="36" rx="4" fill="#9b59b6" stroke="#8e44ad" stroke-width="1.5"/>
+  <text x="170" y="223" text-anchor="middle" font-size="13" fill="#ffffff">网络管理测试</text>
+  
+  <line x1="95" y1="176" x2="95" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="245" y1="176" x2="245" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  
+  <!-- 以太网子节点 -->
+  <rect x="310" y="140" width="130" height="36" rx="4" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="375" y="163" text-anchor="middle" font-size="13" fill="#ffffff">物理/链路层</text>
+  
+  <rect x="460" y="140" width="130" height="36" rx="4" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="525" y="163" text-anchor="middle" font-size="13" fill="#ffffff">SOME/IP测试</text>
+  
+  <rect x="385" y="200" width="130" height="36" rx="4" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="450" y="223" text-anchor="middle" font-size="13" fill="#ffffff">DDS QoS测试</text>
+  
+  <line x1="375" y1="176" x2="375" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="525" y1="176" x2="525" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  
+  <!-- V2X子节点 -->
+  <rect x="610" y="140" width="130" height="36" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="675" y="163" text-anchor="middle" font-size="13" fill="#ffffff">协议一致性</text>
+  
+  <rect x="760" y="140" width="130" height="36" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="825" y="163" text-anchor="middle" font-size="13" fill="#ffffff">通信性能</text>
+  
+  <rect x="685" y="200" width="130" height="36" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="750" y="223" text-anchor="middle" font-size="13" fill="#ffffff">场景仿真</text>
+  
+  <line x1="675" y1="176" x2="675" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="825" y1="176" x2="825" y2="200" stroke="#7f8c8d" stroke-width="1.5"/>
+  
+  <!-- 底部说明框 -->
+  <rect x="50" y="270" width="800" height="230" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="450" y="300" text-anchor="middle" font-size="16" font-weight="bold" fill="#856404">测试工具与关键指标</text>
+  
+  <text x="80" y="335" font-size="14" fill="#856404">CAN/LIN：PCAN/CANoe、示波器、万用表</text>
+  <text x="80" y="360" font-size="14" fill="#856404">关键指标：终端电阻60Ω、位时间偏差＜5%、总线负载率＜70%</text>
+  <text x="80" y="395" font-size="14" fill="#856404">以太网：CANoe/Ethernet、vTESTstudio、眼图测试仪</text>
+  <text x="80" y="420" font-size="14" fill="#856404">关键指标：SOME/IP服务发现＜500ms、DDS DEADLINE精度、眼高＞500mV</text>
+  <text x="80" y="455" font-size="14" fill="#856404">V2X：Keysight/R&S测试仪、CarMaker仿真平台</text>
+  <text x="80" y="480" font-size="14" fill="#856404">关键指标：端到端时延＜100ms、丢包率＜5%、通信距离＞500m</text>
+</svg>
+
+<p>这张图把本章的知识体系串起来了。你可以看到，三大通信协议各有侧重，但测试方法论是相通的——从物理层到应用层，从一致性到性能，再到场景覆盖。我个人习惯在项目启动前先画这样一张图，跟团队对齐测试范围，避免漏测。</p>
+        <div class="footer-nav">
+            <a href="05.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="07.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

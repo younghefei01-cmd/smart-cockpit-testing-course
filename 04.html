@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第4章 功能测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第4章 功能测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="active">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="active">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>4、功能测试：仪表盘、中控娱乐与语音交互</h2>
+
+<p>功能测试，说白了就是验证座舱里每个功能能不能按预期工作。我做了这么多年测试，发现很多团队容易犯一个毛病——把功能测试当成“点一点、看一看”的体力活。其实不然，好的功能测试需要你深入理解用户场景，知道哪些边界值容易翻车，哪些交互路径藏着坑。</p>
+
+<p>这一章，我重点讲三个核心模块：仪表盘、中控娱乐、语音交互。这三个模块覆盖了驾驶员和乘客最频繁的操作区域，也是用户投诉的重灾区。</p>
+
+<div class="highlight">
+  <p><strong>核心观点：</strong>功能测试不是“功能有就行”，而是“功能在各种条件下都稳定、准确、好用”。</p>
+</div>
+
+<!-- SVG 知识体系图 -->
+<svg viewBox="0 0 800 420" style="max-width:100%;height:auto;display:block;margin:20px auto;">
+  <rect x="0" y="0" width="800" height="420" fill="#f0f8ff" rx="8"/>
+  <text x="400" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">功能测试三大核心模块</text>
+  
+  <!-- 中心节点 -->
+  <rect x="300" y="70" width="200" height="50" rx="25" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="100" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">功能测试策略</text>
+  
+  <!-- 分支1：仪表盘 -->
+  <rect x="50" y="170" width="180" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="140" y="200" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">仪表盘功能测试</text>
+  
+  <!-- 分支2：中控娱乐 -->
+  <rect x="310" y="170" width="180" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="400" y="200" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">中控娱乐测试</text>
+  
+  <!-- 分支3：语音交互 -->
+  <rect x="570" y="170" width="180" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="660" y="200" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">语音交互测试</text>
+  
+  <!-- 连接线 -->
+  <line x1="350" y1="120" x2="140" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="120" x2="400" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="120" x2="660" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：仪表盘 -->
+  <rect x="30" y="260" width="100" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="80" y="285" text-anchor="middle" font-size="13" fill="#ffffff">车速</text>
+  <rect x="140" y="260" width="100" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="190" y="285" text-anchor="middle" font-size="13" fill="#ffffff">转速</text>
+  <rect x="80" y="320" width="120" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="1.5"/>
+  <text x="140" y="345" text-anchor="middle" font-size="13" fill="#ffffff">报警灯</text>
+  
+  <!-- 子节点：中控娱乐 -->
+  <rect x="290" y="260" width="100" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="340" y="285" text-anchor="middle" font-size="13" fill="#ffffff">导航</text>
+  <rect x="400" y="260" width="100" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="450" y="285" text-anchor="middle" font-size="13" fill="#ffffff">音乐</text>
+  <rect x="340" y="320" width="120" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="400" y="345" text-anchor="middle" font-size="13" fill="#ffffff">蓝牙</text>
+  
+  <!-- 子节点：语音交互 -->
+  <rect x="570" y="260" width="100" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="620" y="285" text-anchor="middle" font-size="13" fill="#ffffff">唤醒</text>
+  <rect x="680" y="260" width="100" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="730" y="285" text-anchor="middle" font-size="13" fill="#ffffff">识别</text>
+  <rect x="620" y="320" width="120" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="680" y="345" text-anchor="middle" font-size="13" fill="#ffffff">执行</text>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- 说明框 -->
+  <rect x="30" y="380" width="740" height="30" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="400" y="400" text-anchor="middle" font-size="13" fill="#856404">每个模块下都有多个子功能点，测试时要覆盖正常、异常、边界三种场景</text>
+</svg>
+
+<h3>4.1 仪表盘功能测试</h3>
+
+<p>仪表盘是驾驶员最直接的信息窗口。车速、转速、报警灯，这三个东西出问题，轻则让用户困惑，重则引发安全风险。我个人习惯把仪表盘测试分成两类：显示准确性测试和动态响应测试。</p>
+
+<h4>车速与转速测试</h4>
+
+<p>车速和转速的测试，核心就一句话：<strong>仪表显示值必须与真实值一致</strong>。但“一致”这两个字，做起来并不简单。</p>
+
+<p>我遇到过一个问题：某款车在高速巡航时，车速表显示120km/h，但GPS实测只有114km/h。用户投诉说“表显不准”。后来一查，是仪表软件对轮速脉冲的换算系数写错了。你想想看，这种问题在台架上根本发现不了，必须上路实测对比。</p>
+
+<p>测试车速和转速时，我建议至少覆盖以下场景：</p>
+
+<ul>
+  <li><strong>静态对比</strong>：用CAN工具发送固定车速/转速值，检查仪表显示是否一致</li>
+  <li><strong>动态爬升</strong>：从0加速到最高速，观察指针是否平滑、无卡顿、无跳变</li>
+  <li><strong>减速测试</strong>：急减速时，指针回落是否及时，有没有滞后</li>
+  <li><strong>临界值</strong>：比如车速表在0km/h时是否归零，最高速时是否超量程</li>
+  <li><strong>单位切换</strong>：如果支持km/h与mph切换，切换后数值换算是否正确</li>
+</ul>
+
+<div class="tip">
+  <p><strong>小技巧：</strong>测试车速时，最好同时记录仪表显示值、CAN总线报文值和GPS实测值。三路数据对比，才能快速定位问题出在传感器、总线还是仪表软件。</p>
+</div>
+
+<h4>报警灯测试</h4>
+
+<p>报警灯这块，我踩过不少坑。最典型的一个：某个报警灯在自检阶段正常点亮，但车辆启动后就再也不亮了——哪怕真实故障已经发生。用户开了两个月才发现ABS根本没工作。</p>
+
+<p>报警灯测试要关注三个维度：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试维度</th>
+      <th>测试内容</th>
+      <th>典型问题</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>自检逻辑</strong></td>
+      <td>上电时所有报警灯是否依次点亮并熄灭</td>
+      <td>某个灯不亮、亮度不一致、熄灭时序错乱</td>
+    </tr>
+    <tr>
+      <td><strong>触发逻辑</strong></td>
+      <td>模拟故障信号，检查对应报警灯是否点亮</td>
+      <td>灯不亮、延迟点亮、误点亮</td>
+    </tr>
+    <tr>
+      <td><strong>熄灭逻辑</strong></td>
+      <td>故障消除后，报警灯是否自动熄灭</td>
+      <td>故障已消除但灯常亮、闪烁不停</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我曾经遇到一个案例：发动机故障灯在冷启动时偶尔闪烁，但热车后一切正常。查了三天，发现是ECU在低温环境下发送的故障码格式有偏差，仪表解析失败导致误报。嗯，这种偶发问题最折磨人，必须靠长时间监控和日志分析才能抓到。</p>
+
+<div class="warning">
+  <p><strong>注意：</strong>报警灯的颜色和图标必须符合ISO 2575标准。红色代表严重故障（如制动系统），黄色代表警告（如胎压异常），绿色/蓝色代表状态指示（如远光灯）。颜色错了，用户会误解严重程度。</p>
+</div>
+
+<h3>4.2 中控娱乐测试</h3>
+
+<p>中控娱乐是用户接触最多的模块。导航、音乐、蓝牙，这三个功能如果做不好，用户会直接说“这车机真难用”。我见过太多项目，功能开发完了，但体验一塌糊涂。</p>
+
+<h4>导航测试</h4>
+
+<p>导航测试不只是“能不能规划路线”。我把它拆成三层：</p>
+
+<ol>
+  <li><strong>基础功能层</strong>：地图加载、定位、路线规划、语音引导、路口放大图</li>
+  <li><strong>交互体验层</strong>：缩放流畅度、拖拽响应、POI搜索、收藏夹同步</li>
+  <li><strong>异常场景层</strong>：无网络、GPS信号弱、隧道内、多路径选择、偏航重规划</li>
+</ol>
+
+<p>说实话，很多团队只测第一层，觉得“能导航就行”。但用户真正抱怨的，往往是第二层和第三层的问题。比如：</p>
+
+<ul>
+  <li>地图缩放时卡顿，帧率掉到10fps以下</li>
+  <li>在隧道里丢失GPS信号后，出隧道无法快速恢复定位</li>
+  <li>偏航后重规划耗时超过5秒，用户已经开错两个路口了</li>
+</ul>
+
+<p>我建议导航测试一定要做<strong>路测</strong>，而且要在不同城市、不同路况下跑。台架上模拟的GPS信号太干净了，真实环境里的多径效应、高楼遮挡、隧道信号丢失，才是真正的考验。</p>
+
+<h4>音乐测试</h4>
+
+<p>音乐测试看起来简单，但坑也不少。我重点说几个容易忽略的点：</p>
+
+<ul>
+  <li><strong>音频格式兼容性</strong>：MP3、FLAC、WAV、AAC，每种格式都要测。我遇到过FLAC 24bit/192kHz的高码率文件无法解码的问题</li>
+  <li><strong>播放控制</strong>：上一曲/下一曲、暂停/恢复、快进/快退、随机播放、循环模式，每个按键都要反复按，检查响应是否及时</li>
+  <li><strong>音源切换</strong>：从USB切换到蓝牙，再切换到在线音乐，切换过程中有没有爆音、卡顿、音量突变</li>
+  <li><strong>音量调节</strong>：0到最大音量是否线性，有没有某一段音量突然变大或变小</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>避坑指南：</strong>我曾经测试一款车机，播放USB音乐时，每次切歌都会出现“啪”的一声爆音。查了很久，发现是音频解码器在切换采样率时没有做静音处理。解决方案是在切换瞬间插入20ms的静音帧。</p>
+</div>
+
+<h4>蓝牙测试</h4>
+
+<p>蓝牙测试，说白了就是连接稳定性和通话质量。我列一个检查清单：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试项</th>
+      <th>具体内容</th>
+      <th>通过标准</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>配对</td>
+      <td>首次配对、多次配对、PIN码输入</td>
+      <td>配对成功且自动保存设备信息</td>
+    </tr>
+    <tr>
+      <td>自动重连</td>
+      <td>车辆上电后是否自动连接已配对设备</td>
+      <td>10秒内完成重连</td>
+    </tr>
+    <tr>
+      <td>通话质量</td>
+      <td>接听、挂断、通话中切换音源</td>
+      <td>无回声、无断续、音量正常</td>
+    </tr>
+    <tr>
+      <td>多设备</td>
+      <td>同时连接两部手机</td>
+      <td>支持优先级切换，不冲突</td>
+    </tr>
+    <tr>
+      <td>异常场景</td>
+      <td>蓝牙断开、手机远离、来电中断</td>
+      <td>系统不崩溃，恢复后正常</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我记得有一次测试，某款车机在连接iPhone时一切正常，但连接某款安卓手机时，通话声音断断续续。后来发现是蓝牙协议栈对A2DP的SBC编码参数兼容性有问题。这种问题，你不拿不同品牌的手机去试，根本发现不了。</p>
+
+<h3>4.3 语音交互测试</h3>
+
+<p>语音交互是智能座舱的“门面”。用户上车第一件事可能就是“你好，XX，导航到公司”。如果语音不好用，用户对整车的印象分直接打对折。</p>
+
+<p>语音测试我分成三个环节：唤醒、识别、执行。</p>
+
+<h4>唤醒测试</h4>
+
+<p>唤醒词测试，核心指标就两个：唤醒率和误唤醒率。但这两个指标是矛盾的——唤醒率高了，误唤醒率也可能跟着高。怎么平衡？</p>
+
+<ul>
+  <li><strong>唤醒率</strong>：在不同距离（近场、远场）、不同音量（正常、轻声、嘈杂环境）下测试唤醒成功率</li>
+  <li><strong>误唤醒率</strong>：播放音乐、广播、车内聊天时，语音系统会不会被误唤醒</li>
+  <li><strong>唤醒响应时间</strong>：从说出唤醒词到系统给出反馈（灯光/声音），耗时是否在1秒以内</li>
+</ul>
+
+<p>我遇到过最离谱的问题：某款车的语音系统在播放某首摇滚乐时，每次副歌部分都会自动唤醒。原因是歌曲里的某个音节和唤醒词的声学特征太像了。最后只能调整唤醒词的声学模型，或者加一个“二次确认”机制。</p>
+
+<h4>识别测试</h4>
+
+<p>识别测试，说白了就是看语音系统能不能听懂人话。但“听懂”这件事，远比想象中复杂。</p>
+
+<p>我建议覆盖以下场景：</p>
+
+<ul>
+  <li><strong>标准普通话</strong>：清晰、语速适中</li>
+  <li><strong>带口音的普通话</strong>：比如四川话、东北话、广东普通话</li>
+  <li><strong>模糊指令</strong>：比如“我有点冷”（应该识别为调高空调温度）</li>
+  <li><strong>多轮对话</strong>：比如“导航到机场”——“哪个机场？”——“浦东机场”</li>
+  <li><strong>噪声环境</strong>：开窗风噪、空调风声、车内多人交谈</li>
+</ul>
+
+<div class="tip">
+  <p><strong>经验之谈：</strong>识别测试一定要在实车上做，因为车内的声学环境和实验室完全不同。车窗开一条缝，风噪就能让识别率下降20%。</p>
+</div>
+
+<h4>执行测试</h4>
+
+<p>执行测试，就是看语音系统能不能正确执行用户的指令。这块最容易出问题的是“语义理解偏差”。</p>
+
+<p>举个例子：用户说“打开空调”，系统正确识别了这句话，但执行时打开了座椅加热。为什么？因为语义理解模块把“空调”和“座椅加热”关联错了。这种问题在测试中很容易被忽略，因为测试人员通常只关注“识别率”，不关注“执行正确率”。</p>
+
+<p>我建议执行测试要覆盖：</p>
+
+<ul>
+  <li><strong>单指令执行</strong>：每个指令是否对应正确的操作</li>
+  <li><strong>复合指令</strong>：比如“导航到公司并打开音乐”，两个指令是否都能执行</li>
+  <li><strong>冲突指令</strong>：比如“关闭空调”和“打开空调”连续下发，系统如何处理</li>
+  <li><strong>无效指令</strong>：比如“给我倒杯咖啡”，系统应该给出友好的提示，而不是崩溃或沉默</li>
+</ul>
+
+<div class="warning">
+  <p><strong>特别提醒：</strong>语音交互的测试用例一定要和功能测试用例对齐。比如语音说“打开车窗”，执行层调用的就是车窗控制接口。如果车窗控制本身有bug，语音测试再怎么测也过不了。所以，我习惯先保证底层功能稳定，再测语音交互。</p>
+</div>
+
+<p>好了，功能测试这块内容不少，但核心思路就一条：<strong>别只测“有”，要测“好”</strong>。仪表盘要准，中控要顺，语音要灵。每个模块的测试深度，决定了座舱体验的最终品质。</p>
+        <div class="footer-nav">
+            <a href="03.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="05.html">下一章 →</a>
+        </div>
+        <footer>专注课程资料整理</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

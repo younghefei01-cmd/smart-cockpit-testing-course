@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第8章 OTA测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第8章 OTA测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="active">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="active">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>8、OTA测试：升级包管理、断点续传、回滚机制、A/B分区切换测试</h2>
+
+<p>OTA（Over-The-Air）升级，说白了就是让车“自己给自己治病”。不用跑4S店，不用插U盘，远程就能把系统更新了。听起来很爽，对吧？但作为测试人，我得说：OTA是座舱里最容易出“阴间bug”的模块之一。</p>
+
+<p>我参与过好几个量产项目的OTA测试。有一次，升级包下载到99%卡住了，用户重启车机后系统直接变砖。嗯，从那以后，我对OTA测试再也不敢有半点侥幸心理。</p>
+
+<p>这一章，咱们就掰开揉碎聊聊OTA测试的四个核心维度：升级包管理、断点续传、回滚机制、A/B分区切换。</p>
+
+<svg viewBox="0 0 900 520" style="max-width:100%;height:auto;display:block;margin:20px auto;border-radius:8px;">
+  <rect width="900" height="520" fill="#f0f8ff" rx="10"/>
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">OTA测试核心知识体系</text>
+  <!-- 中心节点 -->
+  <rect x="350" y="70" width="200" height="50" rx="25" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="450" y="100" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">OTA升级测试</text>
+  <!-- 四个分支 -->
+  <!-- 升级包管理 -->
+  <rect x="50" y="180" width="180" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="140" y="210" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">升级包管理</text>
+  <line x1="350" y1="95" x2="230" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- 断点续传 -->
+  <rect x="280" y="180" width="180" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="370" y="210" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">断点续传</text>
+  <line x1="450" y1="120" x2="370" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- 回滚机制 -->
+  <rect x="510" y="180" width="180" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="600" y="210" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">回滚机制</text>
+  <line x1="550" y1="120" x2="600" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- A/B分区切换 -->
+  <rect x="740" y="180" width="160" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="820" y="210" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">A/B分区切换</text>
+  <line x1="650" y1="95" x2="740" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- 子节点 -->
+  <!-- 升级包管理子项 -->
+  <rect x="20" y="280" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="85" y="305" text-anchor="middle" font-size="13" fill="#856404">完整性校验</text>
+  <rect x="20" y="340" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="85" y="365" text-anchor="middle" font-size="13" fill="#856404">签名验证</text>
+  <rect x="20" y="400" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="85" y="425" text-anchor="middle" font-size="13" fill="#856404">版本兼容性</text>
+  <!-- 断点续传子项 -->
+  <rect x="240" y="280" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="305" y="305" text-anchor="middle" font-size="13" fill="#856404">下载进度记录</text>
+  <rect x="240" y="340" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="305" y="365" text-anchor="middle" font-size="13" fill="#856404">网络中断恢复</text>
+  <rect x="240" y="400" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="305" y="425" text-anchor="middle" font-size="13" fill="#856404">断电续传</text>
+  <!-- 回滚机制子项 -->
+  <rect x="470" y="280" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="535" y="305" text-anchor="middle" font-size="13" fill="#856404">升级失败回滚</text>
+  <rect x="470" y="340" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="535" y="365" text-anchor="middle" font-size="13" fill="#856404">用户手动回滚</text>
+  <rect x="470" y="400" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="535" y="425" text-anchor="middle" font-size="13" fill="#856404">版本降级策略</text>
+  <!-- A/B分区子项 -->
+  <rect x="700" y="280" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="765" y="305" text-anchor="middle" font-size="13" fill="#856404">分区切换逻辑</text>
+  <rect x="700" y="340" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="765" y="365" text-anchor="middle" font-size="13" fill="#856404">启动引导验证</text>
+  <rect x="700" y="400" width="130" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="765" y="425" text-anchor="middle" font-size="13" fill="#856404">数据迁移</text>
+  <!-- 连接线 -->
+  <line x1="85" y1="320" x2="85" y2="340" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="85" y1="380" x2="85" y2="400" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="305" y1="320" x2="305" y2="340" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="305" y1="380" x2="305" y2="400" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="535" y1="320" x2="535" y2="340" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="535" y1="380" x2="535" y2="400" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="765" y1="320" x2="765" y2="340" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="765" y1="380" x2="765" y2="400" stroke="#7f8c8d" stroke-width="1.5"/>
+  <!-- 底部说明 -->
+  <rect x="200" y="470" width="500" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="450" y="493" text-anchor="middle" font-size="14" fill="#856404">四个维度相互独立又彼此关联，测试时需覆盖全链路</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+
+<h3>8.1 升级包管理测试</h3>
+
+<p>升级包管理，是OTA的第一道防线。包不对，后面全白搭。</p>
+
+<p><strong>核心测试点：</strong></p>
+
+<ul>
+  <li><strong>完整性校验</strong>：下载完成后，车机必须对升级包做MD5或SHA256校验。我见过一个项目，校验算法写错了，每次校验都通过，但刷进去的系统全是坏的。</li>
+  <li><strong>签名验证</strong>：升级包必须携带合法签名。车机要验证签名是否来自OEM授权服务器。没有签名的包，直接拒绝。</li>
+  <li><strong>版本兼容性</strong>：不是所有版本都能直接升。比如从V1.0直接跳到V3.0，中间跳过了V2.0的数据库迁移脚本，升完直接崩溃。</li>
+  <li><strong>包体大小与分片</strong>：大包（比如超过2GB）要支持分片下载。每个分片独立校验，防止传输过程中数据损坏。</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>测试策略建议：</strong></p>
+  <ul>
+    <li>构造各种畸形包：篡改签名、损坏内容、版本号乱写</li>
+    <li>模拟下载过程中服务器切换（CDN节点切换）</li>
+    <li>测试包体大小边界：0字节、1MB、2GB、4GB+</li>
+  </ul>
+</div>
+
+<h3>8.2 断点续传测试</h3>
+
+<p>断点续传，是OTA体验的“救命稻草”。车在移动中，网络随时可能断。如果每次断网都要重新下载，用户会疯的。</p>
+
+<p><strong>测试场景：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>场景</th>
+      <th>预期行为</th>
+      <th>测试方法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>网络中断后恢复</td>
+      <td>从断点处继续下载，不重新开始</td>
+      <td>下载到50%时断开WiFi/4G，30秒后恢复</td>
+    </tr>
+    <tr>
+      <td>车机休眠后唤醒</td>
+      <td>下载进度保留，唤醒后继续</td>
+      <td>下载中让车机进入休眠，5分钟后唤醒</td>
+    </tr>
+    <tr>
+      <td>断电后上电</td>
+      <td>下载进度持久化，上电后继续</td>
+      <td>下载中直接下电（模拟用户锁车），再上电</td>
+    </tr>
+    <tr>
+      <td>服务器切换</td>
+      <td>新服务器能识别断点信息</td>
+      <td>下载中切换CDN节点或服务器IP</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>我曾经踩过的坑：</strong></p>
+  <p>有一次测试断点续传，发现断电后进度确实保存了，但保存的是“已下载字节数”，而不是“已校验的分片索引”。结果上电后从断点继续下载，但之前下载的分片校验失败，整个包报废。记住：断点续传不仅要记录位置，还要记录每个分片的校验状态。</p>
+</div>
+
+<h3>8.3 回滚机制测试</h3>
+
+<p>回滚，是OTA的最后一道保险。升级失败了，系统还能回到上一个可用版本。没有回滚机制的车机，升级失败就是变砖。</p>
+
+<p><strong>回滚触发条件：</strong></p>
+
+<ul>
+  <li><strong>升级过程中断电</strong>：写入分区时突然掉电，系统检测到分区数据不完整，自动回滚</li>
+  <li><strong>校验失败</strong>：升级完成后，系统自检发现关键服务启动失败，触发回滚</li>
+  <li><strong>用户手动回滚</strong>：用户对新版本不满意，通过工程模式或恢复菜单手动回退</li>
+  <li><strong>版本降级策略</strong>：某些OEM允许从高版本降回低版本（比如修复bug后回退），但需要擦除用户数据</li>
+</ul>
+
+<div class="tip">
+  <p><strong>测试技巧：</strong></p>
+  <p>我习惯在升级脚本中插入“人为破坏点”。比如在写入system分区到80%时，模拟断电。然后检查车机重启后是否自动进入recovery模式并执行回滚。这个场景至少跑50次，看回滚成功率是否100%。</p>
+</div>
+
+<p><strong>回滚测试矩阵：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试项</th>
+      <th>操作</th>
+      <th>预期结果</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>升级中断电</td>
+      <td>升级写入到50%时下电</td>
+      <td>重启后自动回滚到旧版本</td>
+    </tr>
+    <tr>
+      <td>升级后自检失败</td>
+      <td>刷入一个有缺陷的版本</td>
+      <td>系统检测到关键服务异常，自动回滚</td>
+    </tr>
+    <tr>
+      <td>用户手动回滚</td>
+      <td>进入recovery菜单选择回滚</td>
+      <td>系统恢复到上一个版本，用户数据保留</td>
+    </tr>
+    <tr>
+      <td>多次回滚</td>
+      <td>连续升级-回滚-升级-回滚</td>
+      <td>每次回滚都能正确恢复到对应版本</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>8.4 A/B分区切换测试</h3>
+
+<p>A/B分区，是当前主流车机OTA方案。说白了就是系统有两套分区：A分区和B分区。当前运行在A分区，升级包就写到B分区。写完后切换启动分区，下次开机就从B分区启动。如果B分区启动失败，还能切回A分区。</p>
+
+<p>这个方案的好处是：升级失败不影响当前系统使用。用户甚至感觉不到在升级。</p>
+
+<p><strong>测试重点：</strong></p>
+
+<ul>
+  <li><strong>分区切换逻辑</strong>：升级完成后，bootloader是否正确更新启动分区标志位。我遇到过切换标志位写错位置，导致每次启动都在两个分区之间反复横跳。</li>
+  <li><strong>启动引导验证</strong>：bootloader在启动前要校验目标分区的完整性。校验失败就切回另一个分区。</li>
+  <li><strong>数据迁移</strong>：用户数据（如导航收藏、蓝牙配对）在分区切换后是否保留。A/B分区通常共享一个data分区，但有些方案会把数据也分区隔离。</li>
+  <li><strong>分区空间管理</strong>：两个分区加起来占用了双倍存储空间。要测试分区空间不足时的升级行为。</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>A/B分区切换测试用例示例：</strong></p>
+  <pre><code>测试用例：A/B分区切换后启动失败回滚
+前置条件：
+  - 当前运行在A分区（版本V1.0）
+  - B分区已写入V2.0升级包
+测试步骤：
+  1. 设置启动标志位为B分区
+  2. 模拟B分区启动失败（如破坏B分区boot镜像）
+  3. 重启车机
+  4. 观察bootloader行为
+预期结果：
+  - bootloader检测到B分区启动失败
+  - 自动将启动标志位切回A分区
+  - 从A分区正常启动
+  - 系统日志记录回滚事件</code></pre>
+</div>
+
+<p><strong>分区切换测试矩阵：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>场景</th>
+      <th>操作</th>
+      <th>预期</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>正常切换</td>
+      <td>升级完成，重启</td>
+      <td>从新分区启动，功能正常</td>
+    </tr>
+    <tr>
+      <td>新分区启动失败</td>
+      <td>破坏新分区关键文件</td>
+      <td>自动回滚到旧分区</td>
+    </tr>
+    <tr>
+      <td>切换标志位异常</td>
+      <td>手动篡改bootloader配置</td>
+      <td>进入recovery模式</td>
+    </tr>
+    <tr>
+      <td>双分区都损坏</td>
+      <td>破坏A和B分区</td>
+      <td>进入紧急恢复模式（需USB刷机）</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>注意：</strong></p>
+  <p>A/B分区方案虽然安全，但也不是万能的。我见过一个案例：升级包写入了B分区，但B分区的文件系统有坏块。启动时bootloader校验通过（因为校验只检查头部），但实际运行时频繁崩溃。所以测试时一定要覆盖“校验通过但运行异常”的场景。</p>
+</div>
+
+<p>OTA测试，说白了就是跟“不确定性”较劲。网络可能断、电可能掉、包可能坏、分区可能挂。测试的目标不是证明系统在理想环境下能工作，而是证明系统在恶劣环境下不会死。嗯，这才是OTA测试的真谛。</p>
+        <div class="footer-nav">
+            <a href="07.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="09.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

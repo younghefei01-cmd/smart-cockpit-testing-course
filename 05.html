@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第5章 HUD抬头显示测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第5章 HUD抬头显示测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="active">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="active">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>5、HUD抬头显示测试：图像对位、亮度自适应、信息同步、AR导航叠加测试</h2>
+
+<p>HUD，说白了就是把仪表信息“投影”到挡风玻璃上，让你开车时不用低头。但这个东西，做起来容易，做好很难。我见过不少项目，HUD功能跑通了，一上路就露馅——要么图像歪了，要么白天看不清，要么导航箭头和实际路面差了好几米。</p>
+
+<p>这一章，咱们就聊聊HUD测试里最核心的四个维度：<strong>图像对位、亮度自适应、信息同步、AR导航叠加</strong>。每个点我都会结合自己踩过的坑来讲。</p>
+
+<div class="highlight">
+  <p><strong>核心观点：</strong>HUD测试不是“能显示就行”，而是“显示得准、跟得上、看得清”。这三个缺一不可。</p>
+</div>
+
+<h3>5.1 图像对位测试：别让画面“飘”了</h3>
+
+<p>图像对位，就是检查HUD投射的画面是否在驾驶员视线正前方，并且位置固定。我遇到过最头疼的问题——车一颠，HUD画面跟着抖，像喝醉了酒。</p>
+
+<h4>5.1.1 静态对位检查</h4>
+
+<p>车辆静止时，用<strong>眼椭圆（Eye-Ellipse）</strong>工具模拟驾驶员眼睛位置。标准做法是：</p>
+
+<ul>
+  <li>在挡风玻璃上贴标记点，对应HUD理论投影区域</li>
+  <li>用摄像头从眼椭圆位置拍摄，测量实际投影与标记点的偏差</li>
+  <li>偏差通常要求 &lt; 0.5° 视角（约合挡风玻璃上2-3mm）</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>别只测一个坐姿。不同身高、不同座椅位置，眼椭圆会变。我习惯测5个典型位置：1.55m、1.65m、1.75m、1.85m、1.95m驾驶员对应的眼点。</p>
+</div>
+
+<h4>5.1.2 动态对位稳定性</h4>
+
+<p>车辆行驶在颠簸路面时，HUD画面不能有明显晃动。测试方法：</p>
+
+<ol>
+  <li>在HUD投影区域中心画一个十字标记</li>
+  <li>车辆以30km/h通过减速带、搓板路</li>
+  <li>用高速摄像机（至少60fps）录制HUD画面</li>
+  <li>逐帧分析十字标记的位移量</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>路面类型</th>
+      <th>允许最大位移（视角）</th>
+      <th>我见过的典型问题</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>平整柏油路</td>
+      <td>&lt; 0.1°</td>
+      <td>基本无抖动</td>
+    </tr>
+    <tr>
+      <td>减速带（单次）</td>
+      <td>&lt; 0.3°</td>
+      <td>画面瞬间偏移后恢复</td>
+    </tr>
+    <tr>
+      <td>连续搓板路</td>
+      <td>&lt; 0.5°</td>
+      <td>画面持续微颤，容易晕</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>注意：</strong>动态对位问题往往不是HUD硬件本身，而是车身振动传递到HUD模组。我曾经排查过一个问题，最后发现是HUD支架的橡胶减震垫老化导致——换了个垫片就解决了。</p>
+</div>
+
+<h3>5.2 亮度自适应测试：从地库到烈日</h3>
+
+<p>HUD的亮度必须随环境光自动调节。太暗看不清，太亮刺眼甚至影响驾驶安全。这个测试，说白了就是模拟各种光照场景。</p>
+
+<h4>5.2.1 环境光传感器标定</h4>
+
+<p>HUD通常依赖车内的环境光传感器（ALS）来感知亮度。测试时：</p>
+
+<ul>
+  <li>用标准光源模拟不同照度：0 lux（全黑）、100 lux（黄昏）、1000 lux（阴天）、10000 lux（晴天）、100000 lux（正午直射）</li>
+  <li>记录HUD亮度输出值（单位：cd/m²）</li>
+  <li>检查亮度变化是否平滑，不能有跳变</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>关键指标：</strong>亮度调节曲线应该是S形——暗处快速提升，中间段平缓，亮处再次快速提升。我见过一个项目，曲线做成了直线，结果地库出来时亮度突然飙升，驾驶员直接骂娘。</p>
+</div>
+
+<h4>5.2.2 动态场景测试</h4>
+
+<p>车辆从地库驶出到阳光下的过程，是最容易出问题的场景。我建议这样测：</p>
+
+<ol>
+  <li>车辆停在室内停车场（照度约50 lux）</li>
+  <li>启动HUD，记录初始亮度</li>
+  <li>车辆以10km/h驶出停车场，进入室外（照度约50000 lux）</li>
+  <li>全程记录HUD亮度变化曲线</li>
+</ol>
+
+<p>合格标准：亮度从暗到亮的过渡时间 &lt; 2秒，且不能出现“闪烁”或“过冲”。</p>
+
+<div class="tip">
+  <p><strong>避坑指南：</strong>我曾经遇到一个问题——HUD在隧道出口处亮度调节滞后，导致驾驶员有2-3秒看不清导航信息。后来发现是ALS的响应时间设置太长。把滤波时间从500ms降到200ms，问题解决。</p>
+</div>
+
+<h3>5.3 信息同步测试：别让数据“打架”</h3>
+
+<p>HUD显示的内容（车速、导航、报警）必须与仪表盘、中控屏完全一致。这个测试看起来简单，但坑最多。</p>
+
+<h4>5.3.1 数据源一致性</h4>
+
+<p>HUD、仪表、中控通常从不同的总线节点获取数据。测试时：</p>
+
+<ul>
+  <li>同时录制HUD画面、仪表画面、CAN总线日志</li>
+  <li>逐帧对比车速、转速、续航里程等关键数据</li>
+  <li>偏差要求：数值完全一致，不允许有0.1km/h的差异</li>
+</ul>
+
+<div class="warning">
+  <p><strong>我曾经踩过的坑：</strong>有一次测试发现HUD显示的车速比仪表慢了1km/h。查了三天，发现是HUD从CAN总线读取的是“滤波后车速”，而仪表读取的是“原始车速”。两个信号源差了1帧的滤波延迟。最后统一了信号源才解决。</p>
+</div>
+
+<h4>5.3.2 时序同步</h4>
+
+<p>信息不仅要内容一致，显示时机也要同步。比如：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>事件</th>
+      <th>仪表响应时间</th>
+      <th>HUD响应时间</th>
+      <th>允许偏差</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>车速变化</td>
+      <td>&lt; 100ms</td>
+      <td>&lt; 150ms</td>
+      <td>&lt; 50ms</td>
+    </tr>
+    <tr>
+      <td>导航转向提示</td>
+      <td>&lt; 200ms</td>
+      <td>&lt; 200ms</td>
+      <td>&lt; 100ms</td>
+    </tr>
+    <tr>
+      <td>报警信号（如胎压）</td>
+      <td>&lt; 50ms</td>
+      <td>&lt; 100ms</td>
+      <td>&lt; 50ms</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>测试方法：用信号发生器模拟事件，同时用示波器抓取仪表和HUD的显示触发信号。</p>
+
+<h3>5.4 AR导航叠加测试：虚拟和现实的对齐</h3>
+
+<p>AR导航是HUD的“高阶玩法”——把导航箭头、车道线直接叠加在真实路面上。这个测试最难，也最容易出问题。</p>
+
+<h4>5.4.1 静态标定</h4>
+
+<p>车辆停在水平路面，用<strong>棋盘格标定板</strong>放在车前10米、20米、30米处。HUD需要把虚拟箭头精确投射到标定板的指定格点上。</p>
+
+<ul>
+  <li>10米处：偏差 &lt; 0.2m</li>
+  <li>20米处：偏差 &lt; 0.5m</li>
+  <li>30米处：偏差 &lt; 1.0m</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>为什么会有偏差？</strong>因为HUD的投影距离是固定的（通常2-3米虚像距离），而真实路面在10米、20米外。AR导航需要做“透视补偿”——说白了就是算好虚拟图像该多大、该偏多少，才能和远处路面重合。</p>
+</div>
+
+<h4>5.4.2 动态跟踪测试</h4>
+
+<p>车辆行驶时，AR导航箭头必须“粘”在路面上。测试场景：</p>
+
+<ol>
+  <li>直线行驶：箭头应始终指向车道中心</li>
+  <li>弯道行驶：箭头应随道路曲率平滑移动</li>
+  <li>上下坡：箭头高度应随路面起伏调整</li>
+</ol>
+
+<p>我习惯用<strong>RTK高精度定位</strong>（厘米级）记录车辆真实轨迹，同时录制HUD画面，然后逐帧比对虚拟箭头与真实道路的偏差。</p>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>AR导航最怕“抖动”。有一次测试，箭头在弯道里左右摇摆，像喝醉了。查下来发现是IMU（惯性测量单元）的噪声太大，导致车辆姿态估算不准。加了个低通滤波器，箭头就稳了。</p>
+</div>
+
+<h4>5.4.3 特殊场景测试</h4>
+
+<p>别忘了这些边界情况：</p>
+
+<ul>
+  <li><strong>多车道变道：</strong>导航箭头能否准确指示目标车道</li>
+  <li><strong>环岛出口：</strong>箭头能否在环岛内持续指引</li>
+  <li><strong>隧道内：</strong>GPS信号丢失时，AR导航能否靠IMU推算</li>
+  <li><strong>雨雾天气：</strong>HUD投影是否受挡风玻璃水雾影响</li>
+</ul>
+
+<div class="warning">
+  <p><strong>注意：</strong>隧道内GPS丢失是AR导航的“死穴”。我见过一个项目，进隧道后AR箭头直接“飞”到天上去了。后来加了视觉SLAM辅助定位，才算稳住。</p>
+</div>
+
+<h3>5.5 HUD测试知识体系</h3>
+
+<p>下面这张图，是我自己整理的HUD测试核心框架。四个维度互相独立，但又彼此影响——比如亮度自适应做不好，AR导航的叠加效果也会打折扣。</p>
+
+<svg viewBox="0 0 800 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;">
+  <title>HUD抬头显示测试知识体系</title>
+  
+  <!-- 中心节点 -->
+  <rect x="300" y="20" width="200" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="52" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="bold">HUD测试核心</text>
+  
+  <!-- 四个分支节点 -->
+  <rect x="50" y="120" width="160" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="130" y="152" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">图像对位</text>
+  
+  <rect x="240" y="120" width="160" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="320" y="152" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">亮度自适应</text>
+  
+  <rect x="430" y="120" width="160" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="510" y="152" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">信息同步</text>
+  
+  <rect x="620" y="120" width="160" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="700" y="152" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="bold">AR导航叠加</text>
+  
+  <!-- 连接线：中心到四个分支 -->
+  <line x1="350" y1="70" x2="180" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="380" y1="70" x2="340" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="420" y1="70" x2="460" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="70" x2="620" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：图像对位 -->
+  <rect x="30" y="210" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="95" y="236" text-anchor="middle" fill="#ffffff" font-size="13">静态对位</text>
+  
+  <rect x="30" y="270" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="95" y="296" text-anchor="middle" fill="#ffffff" font-size="13">动态稳定性</text>
+  
+  <line x1="130" y1="170" x2="95" y2="210" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="130" y1="170" x2="95" y2="270" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：亮度自适应 -->
+  <rect x="220" y="210" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="285" y="236" text-anchor="middle" fill="#ffffff" font-size="13">ALS标定</text>
+  
+  <rect x="220" y="270" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="285" y="296" text-anchor="middle" fill="#ffffff" font-size="13">动态场景</text>
+  
+  <line x1="320" y1="170" x2="285" y2="210" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="320" y1="170" x2="285" y2="270" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：信息同步 -->
+  <rect x="410" y="210" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="475" y="236" text-anchor="middle" fill="#ffffff" font-size="13">数据一致性</text>
+  
+  <rect x="410" y="270" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="475" y="296" text-anchor="middle" fill="#ffffff" font-size="13">时序同步</text>
+  
+  <line x1="510" y1="170" x2="475" y2="210" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="510" y1="170" x2="475" y2="270" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：AR导航叠加 -->
+  <rect x="600" y="210" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="665" y="236" text-anchor="middle" fill="#ffffff" font-size="13">静态标定</text>
+  
+  <rect x="600" y="270" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="665" y="296" text-anchor="middle" fill="#ffffff" font-size="13">动态跟踪</text>
+  
+  <rect x="600" y="330" width="130" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="665" y="356" text-anchor="middle" fill="#ffffff" font-size="13">特殊场景</text>
+  
+  <line x1="700" y1="170" x2="665" y2="210" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="700" y1="170" x2="665" y2="270" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="700" y1="170" x2="665" y2="330" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 底部说明框 -->
+  <rect x="150" y="420" width="500" height="70" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="400" y="448" text-anchor="middle" fill="#856404" font-size="14" font-weight="bold">测试要点</text>
+  <text x="400" y="472" text-anchor="middle" fill="#856404" font-size="12">四个维度相互独立，但亮度自适应影响AR导航的叠加效果</text>
+  <text x="400" y="488" text-anchor="middle" fill="#856404" font-size="12">信息同步是基础，数据不一致会导致驾驶员困惑</text>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+
+<p>嗯，HUD测试这块，说白了就是“较真”。图像偏了0.1°、亮度慢了0.5秒、数据差了1km/h——这些在别的功能上可能不算事，但在HUD上，就是安全隐患。我做了这么多年测试，最大的体会就是：HUD是驾驶员的眼睛延伸，容不得半点马虎。</p>
+        <div class="footer-nav">
+            <a href="04.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="06.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

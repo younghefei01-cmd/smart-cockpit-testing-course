@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第7章 诊断测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第7章 诊断测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="active">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="active">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>7、诊断测试：UDS诊断协议（ISO 14229）、DTC读写、刷写测试、诊断日志分析</h2>
+
+<p>诊断测试，说白了就是让座舱“自己开口说话”。车机出了什么毛病、哪个传感器信号丢了、软件版本对不对——这些信息都藏在诊断协议里。我做了这么多年座舱测试，最怕听到的一句话就是：“车机黑屏了，但不知道为啥。” 嗯，如果你懂UDS，黑屏也能找到根因。</p>
+
+<h3>7.1 UDS诊断协议（ISO 14229）——座舱的“听诊器”</h3>
+
+<p>UDS的全称是Unified Diagnostic Services，统一诊断服务。它定义了一套标准化的“问诊”流程：测试仪发请求，ECU给响应。座舱域控制器作为智能终端，必须完整支持UDS服务。</p>
+
+<p>我个人习惯把UDS服务分成三类：</p>
+
+<ul>
+  <li><strong>控制类</strong>：比如例程控制、IO控制，用来强制让某个硬件动作（比如让屏幕亮起来）。</li>
+  <li><strong>读取类</strong>：读数据、读DTC、读版本信息，这是测试中最常用的。</li>
+  <li><strong>写入类</strong>：写数据、写DTC、刷写程序，风险最高，需要格外小心。</li>
+</ul>
+
+<p>这里有个关键点：UDS的请求和响应都有固定的报文格式。我见过不少测试新手，拿着CAN工具一顿发，结果ECU就是不回。为什么？因为服务ID（SID）写错了，或者子功能参数没对齐。</p>
+
+<div class="highlight">
+  <p><strong>核心原则</strong>：UDS通信是“一问一答”模式。测试仪发送请求后，ECU必须在规定时间内（通常50ms以内）给出响应。如果超时没收到，要么是物理层断了，要么是ECU卡死了。</p>
+</div>
+
+<h3>7.2 DTC读写——故障码的“翻译官”</h3>
+
+<p>DTC（Diagnostic Trouble Code）是ECU自己记录的“病历本”。每次检测到异常，ECU就会生成一个DTC，并附带故障状态和快照数据。</p>
+
+<p>DTC的结构其实很简单：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>字段</th>
+      <th>长度</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DTC编号</td>
+      <td>3字节</td>
+      <td>高字节=系统类型（如0x00=动力，0x01=底盘，0x02=车身）</td>
+    </tr>
+    <tr>
+      <td>故障状态掩码</td>
+      <td>1字节</td>
+      <td>Bit0=测试失败，Bit1=当前故障，Bit2=历史故障……</td>
+    </tr>
+    <tr>
+      <td>快照数据</td>
+      <td>可变</td>
+      <td>记录故障发生时的环境参数（车速、电压、温度等）</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>测试时，我们最常用的两个服务是：</p>
+<ul>
+  <li><strong>0x19（读取DTC信息）</strong>：可以按状态掩码过滤，比如只读当前故障。</li>
+  <li><strong>0x14（清除DTC）</strong>：清空所有故障记录。注意，清除后ECU会重新开始监控。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>避坑指南</strong>：我曾经遇到过一台车机，清除DTC后某些功能反而异常了。后来发现，ECU在清除DTC时会重置一些自适应参数。所以，清除DTC后一定要做功能回归测试，别以为清完就万事大吉。</p>
+</div>
+
+<h3>7.3 刷写测试——座舱的“换血手术”</h3>
+
+<p>刷写（Reprogramming）是诊断测试里风险最高的环节。刷写失败，座舱可能直接变砖。我见过最惨的一次，刷写过程中CAN总线突然掉电，整个域控制器再也起不来了——只能返厂拆芯片重烧。</p>
+
+<p>刷写流程通常分三个阶段：</p>
+
+<ol>
+  <li><strong>预编程阶段</strong>：关闭通信、禁用DTC记录、进入扩展会话。</li>
+  <li><strong>编程阶段</strong>：擦除Flash、写入数据块、校验完整性。</li>
+  <li><strong>后编程阶段</strong>：复位ECU、恢复通信、检查软件版本。</li>
+</ol>
+
+<p>测试时，我建议重点关注以下几点：</p>
+<ul>
+  <li><strong>数据块大小</strong>：UDS单帧最多传4095字节（0xFFF），超过就要用多帧传输。如果数据块切得太小，刷写时间会很长；切得太大，缓冲区可能溢出。</li>
+  <li><strong>传输中断恢复</strong>：刷写到一半断电了，ECU能不能从断点续传？很多廉价方案不支持，只能从头刷。</li>
+  <li><strong>版本回退</strong>：刷了新版本后，能不能刷回旧版本？有些ECU会做版本锁死，防止降级。</li>
+</ul>
+
+<div class="warning">
+  <p><strong>警告</strong>：刷写测试必须在台架上做，不要在实车上频繁刷写。每次刷写都会磨损Flash的寿命（通常10万次擦写）。另外，刷写前一定要备份原厂固件，万一刷坏了还能救回来。</p>
+</div>
+
+<h3>7.4 诊断日志分析——从“黑盒”到“白盒”</h3>
+
+<p>诊断日志是测试人员的“破案工具”。每次测试跑完，我都会先翻日志，而不是直接看结果。日志里藏着很多细节：哪个服务超时了、哪条报文被拒了、ECU回复了哪个NRC（否定响应码）。</p>
+
+<p>常见的NRC码及其含义：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>NRC码</th>
+      <th>含义</th>
+      <th>常见原因</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0x10</td>
+      <td>一般拒绝</td>
+      <td>请求格式错误，或ECU不支持该服务</td>
+    </tr>
+    <tr>
+      <td>0x22</td>
+      <td>条件不满足</td>
+      <td>比如没进入正确的会话模式就发刷写请求</td>
+    </tr>
+    <tr>
+      <td>0x31</td>
+      <td>请求超出范围</td>
+      <td>DID编号不存在，或数据长度不对</td>
+    </tr>
+    <tr>
+      <td>0x78</td>
+      <td>请求正确但正在处理</td>
+      <td>ECU需要更多时间，测试仪应该等待</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>分析日志时，我习惯按这个顺序排查：</p>
+<ul>
+  <li>先看物理层：CAN总线有没有错误帧？LIN总线有没有唤醒失败？</li>
+  <li>再看会话层：ECU当前在哪个会话模式？默认会话还是扩展会话？</li>
+  <li>最后看应用层：服务ID对不对？子功能参数对不对？</li>
+</ul>
+
+<div class="tip">
+  <p><strong>个人经验</strong>：有一次我排查一个“刷写后黑屏”的问题，日志里显示刷写成功，但ECU复位后就是没反应。后来发现，ECU在复位后进入了默认会话，而屏幕驱动需要在扩展会话下才能初始化。说白了，就是刷写流程里少了一个“进入扩展会话”的步骤。这种问题，不看日志根本找不到。</p>
+</div>
+
+<h3>7.5 诊断测试知识体系总览</h3>
+
+<p>下面这张图把诊断测试的核心模块串起来了。你可以把它当作测试时的“导航地图”。</p>
+
+<svg viewBox="0 0 800 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;">
+  <title>诊断测试知识体系总览</title>
+  
+  <!-- 标题 -->
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">诊断测试知识体系总览</text>
+  
+  <!-- 中心节点 -->
+  <rect x="300" y="70" width="200" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="100" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">诊断测试</text>
+  
+  <!-- 四个分支节点 -->
+  <!-- UDS协议 -->
+  <rect x="50" y="170" width="180" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="140" y="200" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">UDS协议 (ISO 14229)</text>
+  
+  <!-- DTC读写 -->
+  <rect x="310" y="170" width="180" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="400" y="200" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">DTC读写</text>
+  
+  <!-- 刷写测试 -->
+  <rect x="570" y="170" width="180" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="660" y="200" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">刷写测试</text>
+  
+  <!-- 日志分析 -->
+  <rect x="310" y="280" width="180" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="310" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">诊断日志分析</text>
+  
+  <!-- 连接线：中心到四个分支 -->
+  <line x1="400" y1="120" x2="140" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="120" x2="400" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="120" x2="660" y2="170" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="120" x2="400" y2="280" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：UDS -->
+  <rect x="30" y="260" width="100" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="80" y="285" text-anchor="middle" font-size="12" fill="#ffffff">控制类</text>
+  
+  <rect x="140" y="260" width="100" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="190" y="285" text-anchor="middle" font-size="12" fill="#ffffff">读取类</text>
+  
+  <rect x="80" y="320" width="120" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="140" y="345" text-anchor="middle" font-size="12" fill="#ffffff">写入类</text>
+  
+  <line x1="140" y1="220" x2="80" y2="260" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="140" y1="220" x2="190" y2="260" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="140" y1="220" x2="140" y2="320" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：DTC -->
+  <rect x="310" y="250" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="350" y="275" text-anchor="middle" font-size="12" fill="#ffffff">0x19读</text>
+  
+  <rect x="410" y="250" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="450" y="275" text-anchor="middle" font-size="12" fill="#ffffff">0x14清</text>
+  
+  <line x1="400" y1="220" x2="350" y2="250" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="220" x2="450" y2="250" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：刷写 -->
+  <rect x="570" y="250" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="610" y="275" text-anchor="middle" font-size="12" fill="#ffffff">预编程</text>
+  
+  <rect x="660" y="250" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="700" y="275" text-anchor="middle" font-size="12" fill="#ffffff">编程</text>
+  
+  <rect x="615" y="310" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="655" y="335" text-anchor="middle" font-size="12" fill="#ffffff">后编程</text>
+  
+  <line x1="660" y1="220" x2="610" y2="250" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="660" y1="220" x2="700" y2="250" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="660" y1="220" x2="655" y2="310" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 子节点：日志分析 -->
+  <rect x="310" y="360" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="350" y="385" text-anchor="middle" font-size="12" fill="#ffffff">物理层</text>
+  
+  <rect x="410" y="360" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="450" y="385" text-anchor="middle" font-size="12" fill="#ffffff">会话层</text>
+  
+  <rect x="360" y="420" width="80" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="400" y="445" text-anchor="middle" font-size="12" fill="#ffffff">应用层</text>
+  
+  <line x1="400" y1="330" x2="350" y2="360" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="330" x2="450" y2="360" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="330" x2="400" y2="420" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 说明框 -->
+  <rect x="30" y="470" width="740" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="400" y="495" text-anchor="middle" font-size="13" fill="#856404">提示：诊断测试的核心是“问对问题、读对数据、写对流程”。先理解协议，再动手测试。</text>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+
+<p>诊断测试不是简单的“发个报文、收个响应”。它需要你理解协议、熟悉流程、会看日志。我个人觉得，诊断测试最能体现一个测试工程师的“系统思维”——因为你得同时关注物理层、会话层和应用层，任何一个环节出问题，结果都不对。</p>
+
+<p>嗯，这一章的内容就到这里。记住：诊断是座舱的“神经系统”，测试就是给神经系统做体检。把UDS吃透了，座舱的很多疑难杂症你都能找到根因。</p>
+        <div class="footer-nav">
+            <a href="06.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="08.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

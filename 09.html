@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第9章 性能测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第9章 性能测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="active">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="active">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>9、性能测试：系统启动时间、应用冷热启动、帧率、内存泄漏、CPU占用率监控</h2>
+
+<p>性能测试这块，说实话，是座舱测试里最容易「翻车」的环节。为什么？因为功能测不过你可以说「bug 没修好」，但性能差，用户一上车就能感觉到——启动慢、滑屏卡、切应用掉帧。我见过不少项目，功能测了三轮都过了，结果性能一测，直接打回原型。</p>
+
+<p>今天咱们就把性能测试的几个核心维度拆开聊。我个人习惯把座舱性能分成四块：启动速度、渲染流畅度、资源占用、稳定性。下面一个个说。</p>
+
+<h3>9.1 系统启动时间：用户的第一印象</h3>
+
+<p>系统启动时间，说白了就是从按下电源键到主界面可交互的时间。这个指标直接决定了用户对车机的第一印象。你想想看，如果车都开出去几百米了，中控还在转圈，那体验能好吗？</p>
+
+<p>我在项目中遇到过最夸张的情况：某款车机冷启动耗时 45 秒，用户投诉率直接飙升到 30%。后来我们拆解了启动流程，发现光系统服务初始化就占了 22 秒。</p>
+
+<div class="highlight">
+  <p><strong>启动时间测试要点：</strong></p>
+  <ul>
+    <li><strong>冷启动</strong>：系统完全断电后首次上电启动（模拟车辆长时间停放后启动）</li>
+    <li><strong>热启动</strong>：系统休眠后快速唤醒（模拟短时间停车再启动）</li>
+    <li><strong>启动阶段拆解</strong>：Bootloader → Kernel → 系统服务 → 应用层 → 主界面渲染完成</li>
+  </ul>
+</div>
+
+<p>测试方法其实不复杂。用高速摄像头对准屏幕，记录从上电到主界面完全可交互的时间。我个人习惯用 <code>logcat</code> 打时间戳，配合 <code>dumpsys</code> 抓关键节点。</p>
+
+<pre><code># 抓取系统启动关键时间戳
+adb logcat -b all -v time | grep "BOOT_COMPLETE\|SYSTEM_UI_START\|LAUNCHER_READY"
+
+# 查看系统启动耗时统计
+adb shell dumpsys activity processes | grep "startup"</code></pre>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>冷启动时间建议控制在 15 秒以内，热启动不超过 3 秒。如果超过 20 秒，基本可以判定为性能缺陷，需要推动系统组优化。</p>
+</div>
+
+<h3>9.2 应用冷热启动：用户感知最直接的场景</h3>
+
+<p>应用启动速度，是用户每天都会感知到的。冷启动是应用进程不存在时的首次启动，热启动是应用已在后台时的快速切换。这两者的测试方法完全不同。</p>
+
+<p>我记得有一次测试导航应用，冷启动耗时 8 秒，产品经理当场就炸了。后来发现是应用在启动时加载了太多第三方 SDK，光定位初始化就占了 3 秒。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>启动类型</th>
+      <th>定义</th>
+      <th>测试方法</th>
+      <th>建议阈值</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>冷启动</td>
+      <td>进程不存在，需创建进程并加载资源</td>
+      <td>强制停止应用后启动</td>
+      <td>&lt; 3 秒</td>
+    </tr>
+    <tr>
+      <td>热启动</td>
+      <td>进程存活，只需恢复界面</td>
+      <td>按 Home 键后立即重新打开</td>
+      <td>&lt; 1 秒</td>
+    </tr>
+    <tr>
+      <td>温启动</td>
+      <td>进程存活但 Activity 被回收</td>
+      <td>切换多个应用后再返回</td>
+      <td>&lt; 2 秒</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code># 测量应用冷启动时间（以导航应用为例）
+adb shell am start -W com.example.navigation/.MainActivity
+
+# 输出示例
+# ThisTime: 2850  (Activity 启动耗时)
+# TotalTime: 3200 (应用总启动耗时)
+# WaitTime: 3250  (包含系统调度时间)</code></pre>
+
+<div class="warning">
+  <p><strong>注意：</strong>冷启动测试至少需要重复 10 次取平均值，因为第一次启动可能涉及系统缓存预热。我曾经遇到过第一次启动 5 秒，第二次就变成 2 秒的情况，这种波动本身就是一个问题。</p>
+</div>
+
+<h3>9.3 帧率：流畅度的硬指标</h3>
+
+<p>帧率，就是每秒渲染的画面数。座舱系统一般要求 60fps，低于 30fps 用户就能明显感觉到卡顿。但这里有个坑——平均帧率 55fps 不代表不卡，关键是看掉帧分布。</p>
+
+<p>我习惯用 <code>dumpsys gfxinfo</code> 抓取帧渲染数据，重点关注「掉帧率」和「Jank 次数」。掉帧率超过 10% 就需要排查了。</p>
+
+<pre><code># 抓取当前应用的帧渲染数据
+adb shell dumpsys gfxinfo com.example.navigation
+
+# 重点关注指标
+# Draw + Prepare + Process + Execute 的总耗时
+# 超过 16.67ms 的帧即为掉帧（60fps 标准）
+# Jank 次数：连续掉帧超过 3 帧的次数</code></pre>
+
+<div class="highlight">
+  <p><strong>帧率测试核心指标：</strong></p>
+  <ul>
+    <li><strong>平均帧率</strong>：整体流畅度参考，建议 ≥ 55fps</li>
+    <li><strong>掉帧率</strong>：掉帧帧数 / 总帧数，建议 ≤ 5%</li>
+    <li><strong>Jank 次数</strong>：连续掉帧 ≥ 3 帧的次数，建议 0</li>
+    <li><strong>帧时间 P99</strong>：99% 的帧耗时，建议 ≤ 30ms</li>
+  </ul>
+</div>
+
+<p>为什么会掉帧？说白了就是主线程干了太多活。布局嵌套太深、动画计算量太大、或者频繁 GC 都会导致掉帧。我建议用 <code>Profile GPU Rendering</code> 工具可视化查看每一帧的耗时分布。</p>
+
+<h3>9.4 内存泄漏：隐形的性能杀手</h3>
+
+<p>内存泄漏这东西，短期看不出来，但跑个一两天，系统就会越来越慢，最后直接 OOM 崩溃。我在项目中遇到过最典型的一个案例：地图应用每次导航结束后，有一个 Bitmap 对象没有被释放，跑 8 小时后内存占用从 200MB 涨到了 1.2GB，然后系统直接杀掉了所有后台应用。</p>
+
+<p>内存泄漏的测试方法，我推荐用 <code>adb shell dumpsys meminfo</code> 做持续监控，配合 <code>leakcanary</code> 做自动化检测。</p>
+
+<pre><code># 持续监控应用内存变化（每 5 秒采样一次）
+while true; do
+  adb shell dumpsys meminfo com.example.navigation | grep "TOTAL"
+  sleep 5
+done
+
+# 抓取内存快照分析
+adb shell am dumpheap com.example.navigation /data/local/tmp/heapdump.hprof
+adb pull /data/local/tmp/heapdump.hprof</code></pre>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>内存泄漏测试至少要跑 4 小时以上，模拟用户反复执行「打开-关闭-打开」的操作序列。如果内存占用持续增长且不回落，基本可以判定存在泄漏。</p>
+</div>
+
+<h3>9.5 CPU 占用率监控：资源争抢的源头</h3>
+
+<p>CPU 占用率过高，会导致系统响应变慢、帧率下降、功耗增加。座舱系统里，导航、语音、多媒体这几个应用是 CPU 消耗大户。我见过最离谱的情况：某个音乐应用在后台播放时 CPU 占用率高达 40%，原因是它每 100ms 就去刷新一次专辑封面。</p>
+
+<p>CPU 监控我一般用 <code>top</code> 命令或者 <code>dumpsys cpuinfo</code>，重点关注两个维度：峰值占用率和平均占用率。</p>
+
+<pre><code># 查看所有进程的 CPU 占用率
+adb shell top -n 1 -d 1
+
+# 查看指定应用的 CPU 占用率
+adb shell dumpsys cpuinfo | grep "com.example.navigation"
+
+# 持续监控（每秒刷新一次）
+adb shell top -d 1 | grep "com.example.navigation"</code></pre>
+
+<table>
+  <thead>
+    <tr>
+      <th>场景</th>
+      <th>建议 CPU 占用率</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>前台应用（导航/视频）</td>
+      <td>&lt; 30%</td>
+      <td>保证系统其他服务正常运行</td>
+    </tr>
+    <tr>
+      <td>后台应用</td>
+      <td>&lt; 5%</td>
+      <td>避免影响前台应用性能</td>
+    </tr>
+    <tr>
+      <td>系统空闲</td>
+      <td>&lt; 10%</td>
+      <td>排除异常后台进程</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>注意：</strong>CPU 占用率测试一定要在实车上进行，模拟器的 CPU 调度策略和真机差异很大。我曾经在模拟器上测出来 CPU 占用率只有 5%，上了实车直接飙到 35%，差点被坑死。</p>
+</div>
+
+<h3>9.6 性能测试知识体系</h3>
+
+<p>下面这张图是我自己整理的性能测试知识体系，涵盖了咱们刚才聊的所有维度。你可以把它当作测试策略的参考框架。</p>
+
+<svg viewBox="0 0 900 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;margin:16px 0;">
+  <text x="450" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">智能座舱性能测试知识体系</text>
+  
+  <!-- 中心节点 -->
+  <rect x="350" y="60" width="200" height="45" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="450" y="88" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">性能测试</text>
+  
+  <!-- 四个核心维度 -->
+  <rect x="50" y="150" width="180" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="140" y="176" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">启动速度</text>
+  
+  <rect x="260" y="150" width="180" height="40" rx="6" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="350" y="176" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">渲染流畅度</text>
+  
+  <rect x="470" y="150" width="180" height="40" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="560" y="176" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">资源占用</text>
+  
+  <rect x="680" y="150" width="180" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="770" y="176" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">稳定性</text>
+  
+  <!-- 连接线：中心到四个维度 -->
+  <line x1="400" y1="105" x2="190" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="105" x2="400" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="105" x2="520" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="550" y1="105" x2="720" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 启动速度子项 -->
+  <rect x="30" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="100" y="252" text-anchor="middle" font-size="12" fill="#ffffff">冷启动</text>
+  
+  <rect x="180" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="250" y="252" text-anchor="middle" font-size="12" fill="#ffffff">热启动</text>
+  
+  <!-- 渲染流畅度子项 -->
+  <rect x="240" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="310" y="252" text-anchor="middle" font-size="12" fill="#ffffff">帧率</text>
+  
+  <rect x="390" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="460" y="252" text-anchor="middle" font-size="12" fill="#ffffff">掉帧率</text>
+  
+  <!-- 资源占用子项 -->
+  <rect x="450" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="520" y="252" text-anchor="middle" font-size="12" fill="#ffffff">CPU 占用</text>
+  
+  <rect x="600" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="670" y="252" text-anchor="middle" font-size="12" fill="#ffffff">内存占用</text>
+  
+  <!-- 稳定性子项 -->
+  <rect x="660" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="730" y="252" text-anchor="middle" font-size="12" fill="#ffffff">内存泄漏</text>
+  
+  <rect x="810" y="230" width="140" height="35" rx="4" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="880" y="252" text-anchor="middle" font-size="12" fill="#ffffff">长时间稳定性</text>
+  
+  <!-- 子项连接线 -->
+  <line x1="120" y1="190" x2="100" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="160" y1="190" x2="250" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="330" y1="190" x2="310" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="370" y1="190" x2="460" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="540" y1="190" x2="520" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="580" y1="190" x2="670" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="740" y1="190" x2="730" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  <line x1="800" y1="190" x2="880" y2="230" stroke="#7f8c8d" stroke-width="1.5"/>
+  
+  <!-- 底部说明框 -->
+  <rect x="150" y="310" width="600" height="50" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="450" y="332" text-anchor="middle" font-size="13" fill="#856404">测试策略：先做基准测试 → 持续监控 → 异常告警 → 回归验证</text>
+  <text x="450" y="350" text-anchor="middle" font-size="12" fill="#856404">建议在实车环境下跑 4 小时以上的稳定性测试</text>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+</svg>
+
+<h3>9.7 性能测试的落地建议</h3>
+
+<p>最后聊点实际的。性能测试不是测一轮就完事了，我建议把它嵌入到 CI/CD 流水线里。每次代码提交都自动跑一轮性能基准测试，如果关键指标下降超过 10%，自动拦截并通知开发。</p>
+
+<p>另外，性能测试报告一定要包含趋势图。单次测试的数据意义不大，但连续一周的趋势图能告诉你：系统是在变好还是在变差。我见过太多团队只关注「这次过了没」，却忽略了性能在慢慢劣化。</p>
+
+<div class="tip">
+  <p><strong>我的习惯：</strong>每次性能测试都保留原始数据，包括测试时间、环境温度、系统版本、应用版本。这些信息在排查问题时非常有用。有一次我们查一个帧率波动问题，最后发现是测试时空调温度太高导致 SoC 降频了。</p>
+</div>
+
+<p>嗯，性能测试这块就先聊到这儿。记住一句话：性能不是测出来的，是设计出来的。测试只是帮你发现问题，真正解决问题还得靠架构优化和代码质量。</p>
+        <div class="footer-nav">
+            <a href="08.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="10.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>
