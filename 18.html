@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第18章 CI/CD集成</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第18章 CI/CD集成</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="active">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="active">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>18、CI/CD集成：Jenkins/GitLab CI流水线、测试用例自动触发、Allure报告、质量门禁</h2>
+
+<p>说实话，很多团队做智能座舱测试，卡就卡在「手工跑一遍太慢」上。你想想看，一个座舱项目，光HMI的测试用例就上千条，每次提测都要人工去点、去等、去截图，然后整理报告……等结果出来，开发那边代码都改了三轮了。</p>
+
+<p>我经历过一个项目，前期全靠手工，每次回归测试要两天。后来我把CI/CD流水线搭起来，测试用例自动触发，Allure报告自动生成，质量门禁一卡——回归时间从两天压缩到40分钟。嗯，今天我们就聊聊这件事。</p>
+
+<h3>18.1 为什么座舱测试需要CI/CD？</h3>
+
+<p>智能座舱的软件迭代速度非常快。今天加个语音功能，明天改个空调面板布局，后天修个蓝牙连接bug。如果没有自动化流水线，测试永远在追开发，永远追不上。</p>
+
+<p>CI/CD能帮你解决三个核心问题：</p>
+
+<ul>
+  <li><strong>频率问题</strong>：每次代码提交都能自动触发测试，不用等人安排</li>
+  <li><strong>一致性问题</strong>：每次跑的测试环境、测试步骤、测试数据都一样，不会出现「我本地能过，你那边就挂」</li>
+  <li><strong>反馈问题</strong>：测试结果实时可见，开发提交代码后半小时就知道自己有没有搞坏东西</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>核心观点</strong>：CI/CD不是锦上添花，而是座舱测试的「基础设施」。没有它，自动化测试的价值至少打五折。</p>
+</div>
+
+<h3>18.2 流水线架构：Jenkins vs GitLab CI</h3>
+
+<p>目前主流的选择就两个：Jenkins和GitLab CI。我两个都用过，说说我的感受。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>对比维度</th>
+      <th>Jenkins</th>
+      <th>GitLab CI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>部署方式</td>
+      <td>独立部署，需要维护Jenkins Server</td>
+      <td>集成在GitLab中，开箱即用</td>
+    </tr>
+    <tr>
+      <td>配置方式</td>
+      <td>Web界面 + Jenkinsfile</td>
+      <td>.gitlab-ci.yml 纯代码配置</td>
+    </tr>
+    <tr>
+      <td>插件生态</td>
+      <td>非常丰富，几乎什么都能做</td>
+      <td>相对精简，但够用</td>
+    </tr>
+    <tr>
+      <td>学习成本</td>
+      <td>中等，Pipeline语法需要熟悉</td>
+      <td>较低，YAML配置直观</td>
+    </tr>
+    <tr>
+      <td>适合场景</td>
+      <td>复杂流水线、多工具链集成</td>
+      <td>GitLab深度用户、中小团队</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我个人习惯：如果团队已经在用GitLab，直接用GitLab CI就够了，省去维护Jenkins的精力。如果团队工具链复杂，比如要同时对接Jira、SonarQube、私有仓库等，Jenkins的插件生态更友好。</p>
+
+<h3>18.3 测试用例自动触发策略</h3>
+
+<p>流水线搭好了，接下来就是「什么时候跑什么测试」。这里有个常见的坑——我见过有人把所有测试用例都放在一个流水线里跑，结果一次提交要等两个小时。这其实没必要。</p>
+
+<p>我建议按触发条件分层：</p>
+
+<ul>
+  <li><strong>提交触发（Commit）</strong>：只跑冒烟测试和单元测试。5分钟内出结果，告诉开发「基本功能没炸」。</li>
+  <li><strong>合并请求触发（MR/PR）</strong>：跑全量接口测试和核心HMI测试。15-20分钟出结果，告诉开发「合并后不会搞坏主干」。</li>
+  <li><strong>定时触发（Nightly）</strong>：跑全量回归测试，包括压力测试、稳定性测试、多语言测试。晚上跑，第二天早上看报告。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>经验之谈</strong>：我曾经把全量回归放在每次提交时跑，结果开发怨声载道，因为等结果的时间比写代码还长。后来改成MR触发+Nightly全量，大家终于不骂我了。</p>
+</div>
+
+<p>下面是一个GitLab CI的简化配置示例，展示如何按分支和触发条件区分测试阶段：</p>
+
+<pre><code>stages:
+  - smoke
+  - integration
+  - regression
+
+smoke_test:
+  stage: smoke
+  script:
+    - python run_smoke.py
+  only:
+    - branches
+  except:
+    - main
+
+integration_test:
+  stage: integration
+  script:
+    - python run_integration.py
+  only:
+    - merge_requests
+
+regression_test:
+  stage: regression
+  script:
+    - python run_regression.py
+  only:
+    - schedules
+  when: nightly</code></pre>
+
+<h3>18.4 Allure报告：让测试结果一目了然</h3>
+
+<p>测试跑完了，报告怎么给？我见过有人把测试日志直接贴到群里，几百行日志，谁看谁头疼。</p>
+
+<p>Allure是我用过最顺手的测试报告框架。它能把测试结果组织成可交互的HTML页面，有趋势图、有失败详情、有截图附件。开发点开一看，就知道自己哪里写崩了。</p>
+
+<p>集成Allure其实就三步：</p>
+
+<ol>
+  <li><strong>测试框架接入</strong>：在pytest或JUnit中配置Allure适配器，添加@allure.feature、@allure.story等装饰器</li>
+  <li><strong>流水线生成报告</strong>：测试执行后，调用allure generate命令生成HTML报告</li>
+  <li><strong>报告归档/发布</strong>：将报告上传到GitLab Pages或Jenkins的HTML Publisher插件</li>
+</ol>
+
+<p>举个例子，在GitLab CI中集成Allure：</p>
+
+<pre><code>allure_report:
+  stage: report
+  script:
+    - allure generate allure-results --clean -o allure-report
+  artifacts:
+    paths:
+      - allure-report
+    expire_in: 30 days</code></pre>
+
+<div class="warning">
+  <p><strong>注意</strong>：Allure报告中的附件（截图、日志）会占用大量存储空间。我建议设置artifacts的过期时间，比如30天自动清理，否则CI服务器的磁盘很快会被撑爆。</p>
+</div>
+
+<h3>18.5 质量门禁：守住底线</h3>
+
+<p>流水线跑完了，报告也生成了，然后呢？如果测试失败了，代码该不该合入？</p>
+
+<p>质量门禁就是干这个的。它是一组规则，自动判断本次提交是否「达标」。不达标就拦住，不让合并。</p>
+
+<p>我常用的门禁规则：</p>
+
+<ul>
+  <li><strong>冒烟测试通过率100%</strong>：有一条冒烟用例失败，直接拒绝合并</li>
+  <li><strong>核心接口测试通过率≥95%</strong>：允许少量非关键失败，但核心功能不能崩</li>
+  <li><strong>新增代码覆盖率≥80%</strong>：防止开发为了通过测试而「跳过」测试</li>
+  <li><strong>无P0/P1级缺陷</strong>：如果有严重缺陷，必须修复后才能合入</li>
+</ul>
+
+<p>在GitLab CI中，可以通过<code>allow_failure</code>和<code>when: manual</code>来实现柔性门禁：</p>
+
+<pre><code>quality_gate:
+  stage: gate
+  script:
+    - python check_quality_gate.py
+  only:
+    - merge_requests
+  allow_failure: false  # 门禁失败，MR无法合并</code></pre>
+
+<div class="highlight">
+  <p><strong>我的建议</strong>：质量门禁不要一开始就设得太严。我见过一个团队，上来就要求覆盖率90%，结果开发天天跟测试吵架。先设一个「及格线」，比如70%，等团队适应了再逐步提高。门禁的目的是守住底线，不是制造对立。</p>
+</div>
+
+<h3>18.6 整体流水线流程</h3>
+
+<p>说了这么多，我们画一张图把整个流程串起来。下面这张SVG图展示了从代码提交到质量门禁的完整链路：</p>
+
+<svg viewBox="0 0 900 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;margin:16px 0;">
+  <text x="450" y="36" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">CI/CD 流水线：从提交到门禁</text>
+
+  <!-- 节点：代码提交 -->
+  <rect x="360" y="60" width="180" height="44" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="450" y="88" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">代码提交</text>
+
+  <!-- 箭头：提交 -> 冒烟测试 -->
+  <line x1="450" y1="104" x2="450" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="445,136 450,148 455,136" fill="#7f8c8d"/>
+
+  <!-- 节点：冒烟测试 -->
+  <rect x="360" y="148" width="180" height="44" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="450" y="176" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">冒烟测试（5min）</text>
+
+  <!-- 分支：冒烟通过 -> 集成测试 -->
+  <line x1="450" y1="192" x2="450" y2="228" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="445,224 450,236 455,224" fill="#7f8c8d"/>
+
+  <!-- 节点：集成测试 -->
+  <rect x="360" y="236" width="180" height="44" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="450" y="264" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">集成测试（15min）</text>
+
+  <!-- 箭头：集成 -> 报告生成 -->
+  <line x1="450" y1="280" x2="450" y2="316" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="445,312 450,324 455,312" fill="#7f8c8d"/>
+
+  <!-- 节点：Allure报告 -->
+  <rect x="360" y="324" width="180" height="44" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="450" y="352" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">Allure报告生成</text>
+
+  <!-- 箭头：报告 -> 质量门禁 -->
+  <line x1="450" y1="368" x2="450" y2="404" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="445,400 450,412 455,400" fill="#7f8c8d"/>
+
+  <!-- 节点：质量门禁 -->
+  <rect x="360" y="412" width="180" height="44" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="450" y="440" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">质量门禁</text>
+
+  <!-- 门禁结果分支 -->
+  <line x1="540" y1="434" x2="620" y2="434" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="620" y1="434" x2="620" y2="470" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="615,466 620,478 625,466" fill="#7f8c8d"/>
+  <text x="640" y="470" font-size="13" fill="#e74c3c" font-weight="bold">不通过 → 拒绝合并</text>
+
+  <line x1="360" y1="434" x2="280" y2="434" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="280" y1="434" x2="280" y2="470" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="275,466 280,478 285,466" fill="#7f8c8d"/>
+  <text x="200" y="470" font-size="13" fill="#2ecc71" font-weight="bold">通过 → 允许合并</text>
+
+  <!-- 说明框 -->
+  <rect x="100" y="490" width="700" height="24" rx="4" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="450" y="507" text-anchor="middle" font-size="12" fill="#856404">说明：每次提交触发冒烟，MR触发集成测试，Nightly触发全量回归</text>
+</svg>
+
+<h3>18.7 避坑指南</h3>
+
+<p>最后，分享几个我踩过的坑：</p>
+
+<ul>
+  <li><strong>别把CI服务器当开发机用</strong>：我见过有人在CI上装了一堆依赖，结果每次构建都要下载半小时。把依赖缓存起来，或者用Docker镜像固化环境。</li>
+  <li><strong>测试数据要独立</strong>：多个流水线同时跑的时候，如果共用一套测试数据，会出现「互相干扰」的情况。每个流水线用独立的测试账号和数据快照。</li>
+  <li><strong>门禁失败要有人跟进</strong>：门禁拦住了，但没人去修，那门禁就形同虚设。我建议门禁失败后自动在Jira或GitLab上创建Bug，并@对应的开发。</li>
+  <li><strong>报告要可追溯</strong>：每次构建的Allure报告要保留历史版本，方便对比「这次比上次多了哪些失败」。我习惯在报告页面加上构建号和时间戳。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>一个小技巧</strong>：在Allure报告中添加自定义环境信息，比如座舱的硬件版本、系统版本、屏幕分辨率。这样看到失败用例时，能立刻知道是在什么环境下复现的，省去很多沟通成本。</p>
+</div>
+
+<p>好了，CI/CD集成这部分就聊到这儿。流水线搭好了，测试用例自动跑了，报告自动出了，门禁也卡住了——你会发现，整个团队的节奏都变了。开发敢频繁提交了，测试不用熬夜跟版本了，项目经理也能实时看到质量状态了。这才是智能座舱测试该有的样子。</p>
+        <div class="footer-nav">
+            <a href="17.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="19.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第25章 热管理测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第25章 热管理测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="active">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="active">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>25、热管理测试：高温工况、散热策略、降频保护、热成像分析</h2>
+
+<p>座舱热管理，说白了就是给车机“防暑降温”。</p>
+<p>我见过不少项目，功能测试全过了，一到夏季路试就卡死、黑屏、触控失灵。查到最后，全是热惹的祸。芯片温度一过阈值，系统自动降频，动画掉帧，导航卡顿，用户直接骂娘。</p>
+<p>所以热管理测试，不是“测温度”，而是测“温度失控后系统还能不能扛住”。</p>
+
+<h3>25.1 高温工况：你得知道极限在哪</h3>
+
+<p>先定义什么叫“高温”。</p>
+<p>我习惯把高温工况分成三档：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>等级</th>
+      <th>环境温度</th>
+      <th>典型场景</th>
+      <th>测试时长</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>常温上限</td>
+      <td>45°C</td>
+      <td>夏季暴晒后启动</td>
+      <td>2小时</td>
+    </tr>
+    <tr>
+      <td>高温极限</td>
+      <td>65°C</td>
+      <td>前挡直晒 + 密闭车厢</td>
+      <td>4小时</td>
+    </tr>
+    <tr>
+      <td>破坏性高温</td>
+      <td>85°C</td>
+      <td>实验室加速老化</td>
+      <td>1小时（非标）</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>注意，65°C 不是随便定的。我测过一台车，夏天停在露天停车场，车内中控台表面温度实测 72°C。所以 65°C 环境箱 + 红外灯模拟太阳辐射，是行业通行做法。</p>
+
+<div class="warning">
+  <strong>注意：</strong> 高温测试必须带负载。空载跑 65°C 没意义，得同时跑导航、音乐、蓝牙通话、360 影像，把 SoC 压到 80% 以上负载。
+</div>
+
+<h3>25.2 散热策略：被动、主动、混合</h3>
+
+<p>座舱的散热手段，我总结下来就三种：</p>
+
+<ul>
+  <li><strong>被动散热</strong>：石墨片、导热硅脂、金属中框。成本低，零噪音，但散热上限有限。我见过某款车机用石墨片把 SoC 热量导到屏幕金属背板，效果还行，但持续高负载 20 分钟后温度就压不住了。</li>
+  <li><strong>主动散热</strong>：风扇、热管、均温板。效果好，但有噪音和寿命问题。我记得有个项目，风扇选型没算好风压，装车后高转速时嗡嗡响，用户投诉“像飞机起飞”。</li>
+  <li><strong>混合散热</strong>：被动 + 主动联动。低负载时纯被动，高负载时启动风扇。这是目前主流方案。</li>
+</ul>
+
+<p>测试散热策略，核心看三点：</p>
+
+<ol>
+  <li><strong>稳态温度</strong>：系统热平衡后，芯片结温是否在规格书范围内。</li>
+  <li><strong>瞬态响应</strong>：突然加载（比如从待机切到导航 + 充电），温度爬升斜率是否可控。</li>
+  <li><strong>风扇策略</strong>：启停温度阈值、PWM 曲线、噪音是否在可接受范围。</li>
+</ol>
+
+<div class="tip">
+  <strong>我的习惯：</strong> 在测试报告中附一张“温度-时间”曲线图。横轴时间，纵轴温度，标出风扇启动点、降频点、关机点。一眼就能看出散热策略是否合理。
+</div>
+
+<h3>25.3 降频保护：最后的防线</h3>
+
+<p>散热再强，也有极限。当芯片温度逼近临界值，系统必须主动降频——这是保护硬件、防止永久损伤的最后手段。</p>
+
+<p>降频保护测试，我重点关注这几个点：</p>
+
+<ul>
+  <li><strong>降频阈值</strong>：芯片结温到多少度开始降频？不同 SoC 不一样，高通 8155 一般是 95°C，联发科 MT2715 是 85°C。你得拿到芯片 datasheet，别猜。</li>
+  <li><strong>降频步进</strong>：是一步到位降 30%，还是逐级降 10%？我建议逐级降，用户体验更平滑。一步到位会导致画面突然卡顿，用户感知很强。</li>
+  <li><strong>恢复机制</strong>：温度降下来后，频率是否恢复？多久恢复？我遇到过一款车机，降频后频率不恢复，直到下次重启——这显然是个 bug。</li>
+  <li><strong>降频期间的功能表现</strong>：降频后导航还能不能用？音乐会不会断？360 影像帧率掉到多少？这些都要明确写进测试用例。</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>降频保护测试 checklist：</strong></p>
+  <ul>
+    <li>确认降频触发温度阈值</li>
+    <li>记录降频前后的 CPU/GPU 频率</li>
+    <li>测量降频后的帧率、响应延迟</li>
+    <li>验证温度回落后频率恢复</li>
+    <li>检查降频期间是否有日志报错</li>
+  </ul>
+</div>
+
+<h3>25.4 热成像分析：让温度“现形”</h3>
+
+<p>热电偶只能测点，热成像仪才能看面。</p>
+<p>我每次做热管理测试，必用热成像仪扫一遍整机。为什么？因为热点往往不在你预期的地方。</p>
+
+<p>举个例子。我之前测一款车机，SoC 温度正常，但屏幕左上角局部温度高达 75°C。拆开一看，是背光驱动 IC 紧贴屏幕排线，散热没做好。热电偶根本测不到那个位置，热成像一照就暴露了。</p>
+
+<p>热成像分析的关键点：</p>
+
+<ul>
+  <li><strong>热点定位</strong>：找出温度最高的 3-5 个点，记录坐标和温度值。</li>
+  <li><strong>温度梯度</strong>：热点周围温度下降是否平缓？如果出现陡降，说明散热路径有断点。</li>
+  <li><strong>热耦合</strong>：两个发热器件是否靠得太近？比如 SoC 和电源管理 IC 挨着，容易互相加热。</li>
+  <li><strong>外壳温度</strong>：用户触摸到的区域（中控屏边框、旋钮、方向盘按键）温度不得超过 55°C，否则有烫伤风险。</li>
+</ul>
+
+<div class="warning">
+  <strong>注意：</strong> 热成像仪要提前预热 10 分钟，发射率设置正确（一般塑料外壳设 0.95，金属设 0.3）。否则测出来的温度偏差很大，我曾经吃过这个亏。
+</div>
+
+<h3>25.5 热管理测试流程</h3>
+
+<p>我把整个流程画成了一张图，方便你对照执行：</p>
+
+<svg viewBox="0 0 800 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;margin:16px 0;">
+  <text x="400" y="36" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">热管理测试流程</text>
+
+  <!-- 节点 -->
+  <rect x="300" y="60" width="200" height="44" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="88" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">1. 定义高温工况</text>
+
+  <rect x="300" y="130" width="200" height="44" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="158" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">2. 布置热电偶 + 热成像</text>
+
+  <rect x="300" y="200" width="200" height="44" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="228" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">3. 加载典型场景</text>
+
+  <rect x="300" y="270" width="200" height="44" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="298" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">4. 监测温度 &amp; 降频行为</text>
+
+  <rect x="300" y="340" width="200" height="44" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="368" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">5. 分析热成像数据</text>
+
+  <rect x="300" y="410" width="200" height="44" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="400" y="438" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">6. 输出测试报告</text>
+
+  <!-- 箭头 -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+
+  <line x1="400" y1="104" x2="400" y2="126" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="174" x2="400" y2="196" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="244" x2="400" y2="266" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="314" x2="400" y2="336" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="384" x2="400" y2="406" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 说明框 -->
+  <rect x="540" y="60" width="220" height="100" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="650" y="82" text-anchor="middle" font-size="12" fill="#856404" font-weight="bold">关键输入</text>
+  <text x="550" y="100" font-size="11" fill="#856404">• 芯片 datasheet 温度阈值</text>
+  <text x="550" y="116" font-size="11" fill="#856404">• 整车热平衡目标</text>
+  <text x="550" y="132" font-size="11" fill="#856404">• 用户典型使用场景</text>
+
+  <rect x="540" y="180" width="220" height="100" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="650" y="202" text-anchor="middle" font-size="12" fill="#856404" font-weight="bold">关键输出</text>
+  <text x="550" y="220" font-size="11" fill="#856404">• 热点分布图</text>
+  <text x="550" y="236" font-size="11" fill="#856404">• 降频触发/恢复曲线</text>
+  <text x="550" y="252" font-size="11" fill="#856404">• 散热策略有效性评估</text>
+
+  <rect x="540" y="300" width="220" height="80" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="650" y="322" text-anchor="middle" font-size="12" fill="#856404" font-weight="bold">常见问题</text>
+  <text x="550" y="340" font-size="11" fill="#856404">• 热点集中在排线/接口处</text>
+  <text x="550" y="356" font-size="11" fill="#856404">• 降频后频率不恢复</text>
+</svg>
+
+<h3>25.6 避坑指南</h3>
+
+<p>最后分享几个我踩过的坑：</p>
+
+<ul>
+  <li><strong>热电偶贴错位置</strong>：我曾经把热电偶贴在 SoC 封装表面，没贴到 die 正上方，读数低了 8°C。后来改用导热胶固定，位置对准芯片中心。</li>
+  <li><strong>忽略环境箱风速</strong>：环境箱的风速会影响散热。标准要求风速 0.5-1 m/s，太快或太慢都会导致测试结果失真。</li>
+  <li><strong>降频测试只跑一次</strong>：降频保护有 hysteresis（迟滞），第一次触发和第二次触发的温度可能不同。我建议至少跑 3 个循环，取平均值。</li>
+  <li><strong>热成像忘记标定</strong>：热成像仪用久了会漂移。我每季度用黑体炉标定一次，确保温度读数准确。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>一个小技巧：</strong> 在热成像照片上叠加 PCB 布局图，可以快速定位发热器件对应的物理位置。我用 Photoshop 半透明叠加，效果很好。</p>
+</div>
+
+<p>热管理测试，说到底就是跟温度赛跑。你跑赢了，系统稳如老狗；你跑输了，用户骂声一片。把高温工况、散热策略、降频保护、热成像分析这四块吃透，座舱的热问题基本就能控住。</p>
+        <div class="footer-nav">
+            <a href="24.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="26.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

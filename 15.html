@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第15章 传感器测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第15章 传感器测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="active">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="active">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>15、传感器测试：摄像头（RGB/IR）、毫米波雷达、激光雷达、超声波雷达、IMU数据融合测试</h2>
+
+<p>传感器测试，说白了就是给智能座舱的「眼睛」和「耳朵」做体检。你想想看，一辆车如果连周围环境都感知不准，那后面的决策、控制全是空中楼阁。我做了这么多年座舱测试，最深的体会就是：传感器数据一旦出问题，整个系统就像瞎子开车——太危险了。</p>
+
+<p>这一章我们重点聊聊五种核心传感器：<strong>RGB摄像头、IR红外摄像头、毫米波雷达、激光雷达、超声波雷达</strong>，再加上<strong>IMU惯性测量单元</strong>的数据融合测试。嗯，这里要注意，单个传感器测得好不代表融合后没问题，真正的坑往往在数据对齐和时序同步上。</p>
+
+<h3>5.1 摄像头测试：RGB与IR</h3>
+
+<p>摄像头是座舱感知的主力。RGB负责可见光，IR负责暗光或夜间。我个人习惯把摄像头测试分成三块：<strong>图像质量、动态范围、帧率稳定性</strong>。</p>
+
+<h4>5.1.1 图像质量测试</h4>
+
+<p>图像质量不是「看着清楚就行」。我们有一套量化指标：</p>
+
+<table>
+  <tr>
+    <th>指标</th>
+    <th>说明</th>
+    <th>典型阈值</th>
+  </tr>
+  <tr>
+    <td>MTF（调制传递函数）</td>
+    <td>衡量边缘清晰度</td>
+    <td>≥0.5 @ Nyquist频率</td>
+  </tr>
+  <tr>
+    <td>SNR（信噪比）</td>
+    <td>信号与噪声的比值</td>
+    <td>≥40dB（白天）/ ≥30dB（夜间）</td>
+  </tr>
+  <tr>
+    <td>动态范围</td>
+    <td>最亮与最暗区域的细节保留能力</td>
+    <td>≥120dB</td>
+  </tr>
+  <tr>
+    <td>色彩还原度</td>
+    <td>ΔE色差</td>
+    <td>≤5</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>我的经验：</strong>IR摄像头在夜间容易过曝，尤其是当车内有人脸补光灯时。我曾经遇到一个项目，IR图像在近距离下人脸全白，后来发现是自动增益参数没调好。建议在测试用例里加入「强补光+近距离」场景。
+</div>
+
+<h4>5.1.2 动态场景测试</h4>
+
+<p>摄像头不能只拍静态画面。座舱里乘客会动，手势会动，甚至车辆颠簸时摄像头也在动。我建议至少覆盖以下场景：</p>
+
+<ul>
+  <li><strong>快速手势识别</strong>：挥手、握拳、比划数字，帧率不低于30fps</li>
+  <li><strong>光照突变</strong>：隧道进出、树荫斑驳，IR自动增益响应时间≤100ms</li>
+  <li><strong>多目标遮挡</strong>：前后排乘客部分重叠，检测框不能跳变</li>
+</ul>
+
+<h3>5.2 毫米波雷达测试</h3>
+
+<p>毫米波雷达在座舱里主要做<strong>生命体征检测</strong>和<strong>车内人员定位</strong>。它不怕光线，但容易被金属和人体遮挡干扰。</p>
+
+<h4>5.2.1 关键参数验证</h4>
+
+<table>
+  <tr>
+    <th>参数</th>
+    <th>测试方法</th>
+    <th>合格标准</th>
+  </tr>
+  <tr>
+    <td>距离精度</td>
+    <td>标准金属板在不同距离反射</td>
+    <td>±5cm @ 0.5~5m</td>
+  </tr>
+  <tr>
+    <td>角度分辨率</td>
+    <td>两个目标物并排放置</td>
+    <td>≤5°</td>
+  </tr>
+  <tr>
+    <td>微动检测</td>
+    <td>模拟呼吸（胸部起伏1~2cm）</td>
+    <td>能检测到0.5Hz~2Hz微动</td>
+  </tr>
+</table>
+
+<div class="warning">
+  <strong>避坑指南：</strong>我曾经在测试毫米波雷达时发现，当座椅加热开启后，雷达误报率飙升。原因是加热丝产生的电磁干扰。后来我们在测试规范里加了一条：<strong>所有电磁干扰源（座椅加热、无线充电、车载WiFi）必须与雷达测试同时进行</strong>。
+</div>
+
+<h3>5.3 激光雷达测试</h3>
+
+<p>激光雷达在座舱里用得不多，但高端车型已经开始用它做<strong>3D空间建模</strong>和<strong>乘客姿态识别</strong>。它的测试重点在<strong>点云密度</strong>和<strong>盲区</strong>。</p>
+
+<h4>5.3.1 点云质量测试</h4>
+
+<p>激光雷达的点云不是越密越好，关键是<strong>均匀性</strong>和<strong>噪点率</strong>。我习惯用以下方法：</p>
+
+<pre><code># 点云均匀性评估伪代码
+def evaluate_point_cloud(points, grid_size=0.1m):
+    grid = create_3d_grid(grid_size)
+    for point in points:
+        grid[point.cell] += 1
+    # 计算每个格子的点数标准差
+    uniformity = std(grid.counts) / mean(grid.counts)
+    return uniformity  # 越小越均匀，阈值 &lt; 0.3</code></pre>
+
+<h4>5.3.2 盲区与遮挡测试</h4>
+
+<ul>
+  <li><strong>座椅遮挡</strong>：头枕、靠背对激光的遮挡，检测盲区面积</li>
+  <li><strong>儿童安全座椅</strong>：不规则形状对点云的干扰</li>
+  <li><strong>车窗反射</strong>：贴膜后的激光衰减，我遇到过衰减超过40%的情况</li>
+</ul>
+
+<h3>5.4 超声波雷达测试</h3>
+
+<p>超声波雷达便宜、成熟，主要用于<strong>近距离障碍物检测</strong>和<strong>脚踢尾门</strong>。它的测试相对简单，但容易忽略<strong>串扰</strong>问题。</p>
+
+<h4>5.4.1 串扰测试</h4>
+
+<p>多个超声波雷达同时工作时，可能会互相干扰。我建议这样测：</p>
+
+<ol>
+  <li>所有超声波雷达同时发射</li>
+  <li>记录每个雷达的回波时间</li>
+  <li>与「单雷达工作」时的数据对比</li>
+  <li>如果时间偏差超过10%，说明存在串扰</li>
+</ol>
+
+<div class="highlight">
+  <strong>关键点：</strong>超声波雷达的测试环境必须安静。我曾经在实验室里测，结果旁边空调的噪音让雷达误报。后来我们规定：测试时关闭所有空调、风扇、音响。
+</div>
+
+<h3>5.5 IMU数据融合测试</h3>
+
+<p>IMU（惯性测量单元）提供<strong>加速度</strong>和<strong>角速度</strong>数据。它本身不直接感知环境，但所有传感器融合都离不开它。IMU的测试核心是<strong>零偏稳定性</strong>和<strong>温漂</strong>。</p>
+
+<h4>5.5.1 零偏稳定性测试</h4>
+
+<p>把IMU放在静止平台上，记录1小时的数据。理想情况下，加速度计输出应该是0g，陀螺仪输出应该是0°/s。但实际上会有漂移。</p>
+
+<table>
+  <tr>
+    <th>指标</th>
+    <th>消费级</th>
+    <th>车规级</th>
+  </tr>
+  <tr>
+    <td>加速度计零偏</td>
+    <td>±10 mg</td>
+    <td>±2 mg</td>
+  </tr>
+  <tr>
+    <td>陀螺仪零偏</td>
+    <td>±5 °/h</td>
+    <td>±1 °/h</td>
+  </tr>
+  <tr>
+    <td>角度随机游走</td>
+    <td>0.2 °/√h</td>
+    <td>0.05 °/√h</td>
+  </tr>
+</table>
+
+<h4>5.5.2 温漂测试</h4>
+
+<p>IMU对温度非常敏感。我建议做<strong>-40°C到85°C</strong>的全温区扫描，记录每个温度点的零偏变化。如果温漂超过阈值，必须在算法里做温度补偿。</p>
+
+<h3>5.6 数据融合测试：真正的硬骨头</h3>
+
+<p>单个传感器测完，只是第一步。数据融合才是真正的硬骨头。你想想看，摄像头30fps，激光雷达10fps，毫米波雷达20fps，IMU 100Hz——这些数据怎么对齐？</p>
+
+<h4>5.6.1 时间戳对齐</h4>
+
+<p>不同传感器的时钟源可能不同。我遇到过最离谱的情况：摄像头用系统时间，激光雷达用GPS时间，两者差了200ms。结果融合后的目标位置直接偏了半米。</p>
+
+<p>我的做法是：</p>
+
+<ul>
+  <li>所有传感器统一使用<strong>PTP（精确时间协议）</strong>同步</li>
+  <li>每个数据包打上硬件时间戳</li>
+  <li>融合算法里做<strong>线性插值</strong>或<strong>卡尔曼滤波预测</strong></li>
+</ul>
+
+<h4>5.6.2 空间坐标系对齐</h4>
+
+<p>每个传感器有自己的坐标系。摄像头是像素坐标系，激光雷达是3D笛卡尔坐标系，IMU是机体坐标系。融合前必须统一到<strong>车辆坐标系</strong>。</p>
+
+<pre><code>// 传感器外参标定示例
+// 将激光雷达点云转换到车辆坐标系
+Eigen::Matrix4d T_lidar_to_vehicle;
+T_lidar_to_vehicle &lt;&lt; 
+    0.9998, -0.0175, 0.0, 0.15,
+    0.0175, 0.9998, 0.0, -0.05,
+    0.0, 0.0, 1.0, 0.3,
+    0.0, 0.0, 0.0, 1.0;
+
+// 应用变换
+PointCloud transformed_cloud = T_lidar_to_vehicle * original_cloud;</code></pre>
+
+<div class="warning">
+  <strong>注意：</strong>外参标定不是一劳永逸的。车辆使用一段时间后，传感器可能因为振动而偏移。我建议每3个月做一次<strong>在线标定验证</strong>，用自然特征点（比如车门边缘）检查外参是否变化。
+</div>
+
+<h4>5.6.3 融合后的场景测试</h4>
+
+<p>数据融合测试不能只看单一指标。我习惯用<strong>场景矩阵</strong>来覆盖：</p>
+
+<table>
+  <tr>
+    <th>场景</th>
+    <th>传感器组合</th>
+    <th>测试重点</th>
+  </tr>
+  <tr>
+    <td>白天正常驾驶</td>
+    <td>RGB + 毫米波 + IMU</td>
+    <td>目标检测一致性</td>
+  </tr>
+  <tr>
+    <td>夜间无光</td>
+    <td>IR + 激光 + IMU</td>
+    <td>点云与IR图像对齐</td>
+  </tr>
+  <tr>
+    <td>强电磁干扰</td>
+    <td>所有传感器</td>
+    <td>毫米波抗干扰 + 融合鲁棒性</td>
+  </tr>
+  <tr>
+    <td>快速变道/急刹</td>
+    <td>IMU + 摄像头</td>
+    <td>IMU预测补偿延迟</td>
+  </tr>
+</table>
+
+<h3>5.7 传感器融合测试框架图</h3>
+
+<p>下面这张图是我自己总结的传感器融合测试框架，涵盖了从单传感器到融合验证的完整链路：</p>
+
+<svg viewBox="0 0 800 500" style="max-width:100%; height:auto; background:#f0f8ff; border-radius:8px;">
+  <title>传感器融合测试框架</title>
+  
+  <!-- 标题 -->
+  <text x="400" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">传感器融合测试框架</text>
+  
+  <!-- 第一层：传感器层 -->
+  <rect x="50" y="60" width="140" height="50" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="120" y="90" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">RGB摄像头</text>
+  
+  <rect x="220" y="60" width="140" height="50" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="290" y="90" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">IR摄像头</text>
+  
+  <rect x="390" y="60" width="140" height="50" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="460" y="90" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">毫米波雷达</text>
+  
+  <rect x="560" y="60" width="140" height="50" rx="6" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="630" y="90" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">激光雷达</text>
+  
+  <!-- 第二层：预处理 -->
+  <rect x="150" y="150" width="200" height="45" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="250" y="178" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">时间戳对齐 + 外参标定</text>
+  
+  <rect x="450" y="150" width="200" height="45" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="550" y="178" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">IMU零偏补偿 + 温漂校正</text>
+  
+  <!-- 第三层：融合核心 -->
+  <rect x="250" y="240" width="300" height="55" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="265" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">多传感器融合引擎</text>
+  <text x="400" y="283" text-anchor="middle" font-size="12" fill="#ffffff">卡尔曼滤波 / 粒子滤波 / 深度学习</text>
+  
+  <!-- 第四层：输出 -->
+  <rect x="250" y="335" width="300" height="45" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="400" y="363" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">融合目标列表 + 置信度</text>
+  
+  <!-- 第五层：验证 -->
+  <rect x="200" y="420" width="400" height="45" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="448" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">场景矩阵验证 + 回归测试</text>
+  
+  <!-- 连接线 -->
+  <line x1="120" y1="110" x2="250" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="290" y1="110" x2="250" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="460" y1="110" x2="250" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="110" x2="250" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <line x1="460" y1="110" x2="550" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="110" x2="550" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <line x1="250" y1="195" x2="400" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="550" y1="195" x2="400" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <line x1="400" y1="295" x2="400" y2="335" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <line x1="400" y1="380" x2="400" y2="420" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- 说明框 -->
+  <rect x="30" y="470" width="740" height="25" rx="4" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="400" y="487" text-anchor="middle" font-size="12" fill="#856404">说明：每个传感器先单独测试，再经过时间/空间对齐后进入融合引擎，最后用场景矩阵验证融合效果</text>
+</svg>
+
+<h3>5.8 测试工具与自动化</h3>
+
+<p>手动测传感器融合太慢了。我推荐用以下工具搭建自动化测试台：</p>
+
+<ul>
+  <li><strong>数据回灌工具</strong>：录制真实路采数据，在实验室回放，对比融合算法输出</li>
+  <li><strong>硬件在环（HIL）</strong>：用信号发生器模拟传感器输出，验证融合算法的边界条件</li>
+  <li><strong>自动化评分脚本</strong>：定义融合目标的正确率、漏检率、误检率，自动生成报告</li>
+</ul>
+
+<div class="highlight">
+  <strong>我的建议：</strong>传感器测试不是「测完就完」。我每次项目交付前，都会做一次<strong>全场景回归</strong>——把之前所有发现的问题重新跑一遍。你永远不知道哪个修复会引入新问题。
+</div>
+
+<p>好了，传感器测试这块内容不少，但核心就一句话：<strong>单传感器测准是基础，数据融合测稳是关键</strong>。你想想看，如果摄像头和雷达对同一个目标的距离差了20cm，你让决策系统信谁？所以，测试时一定要把融合后的输出作为最终评判标准。</p>
+        <div class="footer-nav">
+            <a href="14.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="16.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

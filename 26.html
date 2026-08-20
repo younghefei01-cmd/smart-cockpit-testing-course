@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第26章 EMC测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第26章 EMC测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="active">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="active">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>26、EMC测试：辐射发射、传导发射、抗扰度、静电放电（ESD）</h2>
+
+<p>EMC，电磁兼容性。说白了，就是你的座舱电子设备不能干扰别人，也不能被别人干扰。我做了这么多年测试，见过太多因为EMC问题导致项目延期的案例。有一次，某款车机在实验室里各项功能都跑得好好的，结果一上路，收音机全是杂音，导航GPS信号频繁丢失。最后排查了整整两周，才发现是内部一根屏蔽线接地没处理好。</p>
+
+<p>智能座舱里集成了太多电子模块——中控屏、仪表盘、T-Box、蓝牙、Wi-Fi、无线充电。这些模块挤在一个狭小的空间里，电磁环境极其复杂。所以，EMC测试必须从设计阶段就开始介入，不能等到样机出来了再补救。</p>
+
+<div class="highlight">
+  <p><strong>核心观点：</strong>EMC测试不是“过认证”的敲门砖，而是保证座舱在真实电磁环境下稳定工作的底线。设计阶段不做EMC规划，后期改板成本至少翻10倍。</p>
+</div>
+
+<h3>26.1 辐射发射（Radiated Emission）</h3>
+
+<p>辐射发射测试，就是测量设备通过空间向外辐射的电磁能量。你想想看，座舱里那么多高速信号线、时钟电路、射频模块，它们就像一个个小天线，不停地往外“广播”。如果辐射强度超标，就会干扰车内的收音机、遥控钥匙、甚至其他车辆。</p>
+
+<p>测试标准通常参考CISPR 25，频率范围覆盖150 kHz到2.5 GHz。测试环境必须是电波暗室，地面要有参考接地平面。我建议在项目早期就找好暗室资源，因为预约周期往往很长。</p>
+
+<h4>测试布置要点</h4>
+<ul>
+  <li><strong>天线位置：</strong>距离被测设备1米，分别在水平和垂直极化方向扫描</li>
+  <li><strong>线束布置：</strong>模拟实车线束走向，长度控制在1.5米到2米之间</li>
+  <li><strong>负载模拟：</strong>所有接口必须接真实负载或等效负载，不能空载</li>
+  <li><strong>工作模式：</strong>座舱系统要运行在典型工况，比如导航+蓝牙音乐+空调全开</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>辐射发射超标，80%的问题出在屏蔽和接地。我曾经遇到一个案例，中控屏的LVDS线缆屏蔽层只在单端接地，结果辐射超标6 dB。改成双端接地后，问题直接解决。</p>
+</div>
+
+<h3>26.2 传导发射（Conducted Emission）</h3>
+
+<p>传导发射，测的是设备通过电源线和信号线向外传导的电磁干扰。频率范围一般是150 kHz到108 MHz。说白了，就是看你的设备会不会把噪声“灌”到整车的电源网络里。</p>
+
+<p>智能座舱的电源架构很复杂——有12V常电、ACC电、CAN总线供电、USB供电。任何一个端口处理不好，都可能成为噪声的传导路径。我记得有一次，某款座舱的USB口在给手机充电时，传导发射超标。查了半天，发现是USB的共模扼流圈选型不对，低频段抑制能力不够。</p>
+
+<h4>传导发射测试流程</h4>
+<ol>
+  <li>将被测设备放置在离参考接地平面40 mm的绝缘台上</li>
+  <li>电源线通过LISN（线路阻抗稳定网络）供电</li>
+  <li>使用EMI接收机在150 kHz~108 MHz范围内扫描</li>
+  <li>分别测量L线和N线的干扰电压</li>
+  <li>记录峰值和准峰值数据，与限值线对比</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>频率范围</th>
+      <th>限值（准峰值）</th>
+      <th>限值（平均值）</th>
+      <th>常见超标源</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>150 kHz ~ 300 kHz</td>
+      <td>79 dBµV</td>
+      <td>66 dBµV</td>
+      <td>DC-DC转换器、PWM调光</td>
+    </tr>
+    <tr>
+      <td>300 kHz ~ 530 kHz</td>
+      <td>73 dBµV</td>
+      <td>60 dBµV</td>
+      <td>开关电源、时钟谐波</td>
+    </tr>
+    <tr>
+      <td>530 kHz ~ 1.8 MHz</td>
+      <td>73 dBµV</td>
+      <td>60 dBµV</td>
+      <td>AM收音机频段干扰</td>
+    </tr>
+    <tr>
+      <td>1.8 MHz ~ 30 MHz</td>
+      <td>73 dBµV</td>
+      <td>60 dBµV</td>
+      <td>高速数字信号、以太网</td>
+    </tr>
+    <tr>
+      <td>30 MHz ~ 108 MHz</td>
+      <td>73 dBµV</td>
+      <td>60 dBµV</td>
+      <td>FM收音机频段干扰</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>注意：</strong>传导发射测试时，LISN的接地必须可靠。我曾经见过因为LISN接地线过长，导致测试结果偏差了3 dB以上。接地线长度不要超过1米，而且要用宽铜编织带。</p>
+</div>
+
+<h3>26.3 抗扰度（Immunity）</h3>
+
+<p>抗扰度测试，就是看你的座舱设备在受到外部电磁干扰时，还能不能正常工作。这包括辐射抗扰度（RS）和传导抗扰度（CS）。</p>
+
+<p>辐射抗扰度测试频率范围一般是20 MHz到2 GHz，场强等级从30 V/m到100 V/m不等。测试时，天线在暗室内对着被测设备发射干扰信号，同时监控座舱的各项功能是否出现异常。</p>
+
+<p>我个人的习惯是，在测试前先定义好“性能判据”：</p>
+<ul>
+  <li><strong>判据A：</strong>功能完全正常，性能不下降</li>
+  <li><strong>判据B：</strong>功能暂时下降，干扰消失后自动恢复</li>
+  <li><strong>判据C：</strong>功能丧失，需要人工复位或重启</li>
+</ul>
+
+<p>对于智能座舱，关键安全功能（如仪表显示、报警提示、ADAS信息）必须满足判据A。娱乐功能可以放宽到判据B，但绝对不能出现判据C。</p>
+
+<h4>传导抗扰度（CS）</h4>
+<p>传导抗扰度测试频率范围一般是150 kHz到230 MHz，干扰信号通过耦合钳注入到线束上。座舱的CAN总线、以太网线、传感器线都是重点测试对象。</p>
+
+<p>我曾经遇到一个项目，座舱的触摸屏在CS测试时频繁误触。排查后发现是触摸屏的I²C总线没有加滤波，干扰信号直接耦合进了控制芯片。后来在I²C线上串联了22 Ω电阻，并在靠近芯片端加了100 pF对地电容，问题就解决了。</p>
+
+<div class="tip">
+  <p><strong>避坑指南：</strong>抗扰度测试的“敏感点”往往集中在某个窄频段。不要只看最终结果，要关注测试过程中的实时监控。我建议用自动化脚本记录每个频点的功能状态，这样能精准定位问题频段。</p>
+</div>
+
+<h3>26.4 静电放电（ESD）</h3>
+
+<p>ESD测试，模拟的是人体或物体接触座舱设备时释放的静电。智能座舱的触摸屏、按键、旋钮、USB接口、充电口，都是ESD的高风险区域。</p>
+
+<p>测试标准参考ISO 10605，分为接触放电和空气放电两种方式。接触放电一般用±4 kV和±6 kV，空气放电用±8 kV和±15 kV。测试点包括所有用户可接触的金属部件和缝隙。</p>
+
+<h4>ESD测试的关键点</h4>
+<ul>
+  <li><strong>放电次数：</strong>每个测试点至少放电10次，正负极性各5次</li>
+  <li><strong>放电间隔：</strong>每次放电间隔至少1秒，让系统有恢复时间</li>
+  <li><strong>监控项：</strong>屏幕显示、触摸响应、音频输出、网络连接、系统日志</li>
+  <li><strong>判据：</strong>不允许出现死机、黑屏、重启、功能永久失效</li>
+</ul>
+
+<div class="warning">
+  <p><strong>我曾经踩过的坑：</strong>某款座舱的USB接口在接触放电±6 kV时，系统直接重启。查了三天，发现是USB金属外壳的接地焊盘虚焊，静电能量通过信号线窜入了主控芯片。所以，ESD测试前一定要做X光检查焊接质量。</p>
+</div>
+
+<h3>26.5 EMC测试知识体系</h3>
+
+<p>下面这张图，是我自己整理的EMC测试知识框架。它把四大测试类型、关键参数、常见问题域和应对策略串在了一起。你可以在做测试方案时直接参考。</p>
+
+<svg viewBox="0 0 900 620" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;margin:16px 0;">
+  <title>EMC测试知识体系框架图</title>
+  
+  <!-- 标题 -->
+  <text x="450" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">EMC测试知识体系</text>
+  
+  <!-- 中心节点 -->
+  <rect x="350" y="60" width="200" height="50" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="450" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">智能座舱EMC测试</text>
+  
+  <!-- 四大测试类型节点 -->
+  <!-- 辐射发射 -->
+  <rect x="50" y="150" width="180" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="140" y="180" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">辐射发射 (RE)</text>
+  
+  <!-- 传导发射 -->
+  <rect x="260" y="150" width="180" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="350" y="180" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">传导发射 (CE)</text>
+  
+  <!-- 抗扰度 -->
+  <rect x="470" y="150" width="180" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="560" y="180" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">抗扰度 (IMM)</text>
+  
+  <!-- 静电放电 -->
+  <rect x="680" y="150" width="180" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="770" y="180" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">静电放电 (ESD)</text>
+  
+  <!-- 连接线：中心到四大节点 -->
+  <line x1="400" y1="110" x2="140" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="110" x2="350" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="110" x2="560" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="550" y1="110" x2="770" y2="150" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- 辐射发射子节点 -->
+  <rect x="20" y="240" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="90" y="265" text-anchor="middle" font-size="13" fill="#ffffff">CISPR 25标准</text>
+  
+  <rect x="20" y="295" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="90" y="320" text-anchor="middle" font-size="13" fill="#ffffff">150kHz~2.5GHz</text>
+  
+  <rect x="20" y="350" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="90" y="375" text-anchor="middle" font-size="13" fill="#ffffff">电波暗室</text>
+  
+  <!-- 传导发射子节点 -->
+  <rect x="230" y="240" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="300" y="265" text-anchor="middle" font-size="13" fill="#ffffff">LISN耦合</text>
+  
+  <rect x="230" y="295" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="300" y="320" text-anchor="middle" font-size="13" fill="#ffffff">150kHz~108MHz</text>
+  
+  <rect x="230" y="350" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="300" y="375" text-anchor="middle" font-size="13" fill="#ffffff">电源线/信号线</text>
+  
+  <!-- 抗扰度子节点 -->
+  <rect x="440" y="240" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="510" y="265" text-anchor="middle" font-size="13" fill="#ffffff">RS / CS</text>
+  
+  <rect x="440" y="295" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="510" y="320" text-anchor="middle" font-size="13" fill="#ffffff">20MHz~2GHz</text>
+  
+  <rect x="440" y="350" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="510" y="375" text-anchor="middle" font-size="13" fill="#ffffff">性能判据A/B/C</text>
+  
+  <!-- ESD子节点 -->
+  <rect x="650" y="240" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="720" y="265" text-anchor="middle" font-size="13" fill="#ffffff">ISO 10605</text>
+  
+  <rect x="650" y="295" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="720" y="320" text-anchor="middle" font-size="13" fill="#ffffff">接触/空气放电</text>
+  
+  <rect x="650" y="350" width="140" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="1.5"/>
+  <text x="720" y="375" text-anchor="middle" font-size="13" fill="#ffffff">±4kV~±15kV</text>
+  
+  <!-- 连接线：四大节点到子节点 -->
+  <line x1="140" y1="200" x2="90" y2="240" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="140" y1="200" x2="90" y2="295" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="140" y1="200" x2="90" y2="350" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <line x1="350" y1="200" x2="300" y2="240" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="200" x2="300" y2="295" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="200" x2="300" y2="350" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <line x1="560" y1="200" x2="510" y2="240" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="560" y1="200" x2="510" y2="295" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="560" y1="200" x2="510" y2="350" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <line x1="770" y1="200" x2="720" y2="240" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="770" y1="200" x2="720" y2="295" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="770" y1="200" x2="720" y2="350" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 底部说明框 -->
+  <rect x="100" y="430" width="700" height="50" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="450" y="450" text-anchor="middle" font-size="13" fill="#856404" font-weight="bold">设计阶段介入EMC规划，可减少80%以上的后期整改成本</text>
+  <text x="450" y="470" text-anchor="middle" font-size="12" fill="#856404">屏蔽、接地、滤波、布局——四大EMC设计黄金法则</text>
+  
+  <!-- 底部策略节点 -->
+  <rect x="150" y="510" width="130" height="40" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="215" y="535" text-anchor="middle" font-size="13" fill="#ffffff">屏蔽设计</text>
+  
+  <rect x="310" y="510" width="130" height="40" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="375" y="535" text-anchor="middle" font-size="13" fill="#ffffff">接地优化</text>
+  
+  <rect x="470" y="510" width="130" height="40" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="535" y="535" text-anchor="middle" font-size="13" fill="#ffffff">滤波电路</text>
+  
+  <rect x="630" y="510" width="130" height="40" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="695" y="535" text-anchor="middle" font-size="13" fill="#ffffff">PCB布局</text>
+  
+  <!-- 连接线：说明框到策略 -->
+  <line x1="250" y1="480" x2="215" y2="510" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="350" y1="480" x2="375" y2="510" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="450" y1="480" x2="535" y2="510" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="480" x2="695" y2="510" stroke="#7f8c8d" stroke-width="1.5" marker-end="url(#arrow)"/>
+  
+  <!-- 底部总结 -->
+  <rect x="200" y="570" width="500" height="35" rx="6" fill="#2c3e50" stroke="#2c3e50" stroke-width="1"/>
+  <text x="450" y="593" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">EMC测试 = 辐射发射 + 传导发射 + 抗扰度 + 静电放电</text>
+</svg>
+
+<h3>26.6 测试策略总结</h3>
+
+<p>EMC测试不是一次性工作。我建议按照“设计评审→预测试→正式测试→整改验证”的流程来推进。每个阶段都有不同的侧重点：</p>
+
+<ul>
+  <li><strong>设计评审阶段：</strong>检查原理图和PCB布局，重点关注时钟走线、电源滤波、屏蔽接地</li>
+  <li><strong>预测试阶段：</strong>在内部实验室快速扫描，发现早期问题，降低正式测试风险</li>
+  <li><strong>正式测试阶段：</strong>在认证实验室按标准流程执行，记录所有数据</li>
+  <li><strong>整改验证阶段：</strong>针对不合格项制定整改方案，重新测试确认</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的建议：</strong>预测试阶段不要省钱。哪怕只是用近场探头扫一遍板卡，也能发现80%的潜在问题。我见过太多项目为了省几万块的预测试费用，结果正式测试时挂了，整改加复测花了十几万，还耽误了两个月工期。</p>
+</div>
+
+<p>嗯，EMC测试就讲到这里。记住，电磁兼容不是玄学，是工程。只要你掌握了辐射发射、传导发射、抗扰度和ESD这四大块，再结合设计阶段的预防措施，智能座舱的EMC问题完全可以控制在可控范围内。</p>
+        <div class="footer-nav">
+            <a href="25.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="27.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

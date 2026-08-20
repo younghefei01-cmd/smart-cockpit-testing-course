@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第17章 自动化测试框架</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第17章 自动化测试框架</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="active">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="active">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>17、自动化测试框架：Python + pytest + Appium/UI Automator、关键字驱动、数据驱动、Page Object模式</h2>
+
+<p>说实话，自动化测试框架这个话题，很多团队都踩过坑。我见过不少项目，测试代码写了一堆，结果换个车型、改个分辨率就跑不起来了。为什么？因为框架选型没想清楚，代码耦合太严重。</p>
+
+<p>今天咱们就聊聊，在智能座舱这个场景下，怎么搭一套真正能用的自动化框架。核心就四个字：<strong>分层、解耦</strong>。</p>
+
+<h3>17.1 技术栈选型：为什么是 Python + pytest + Appium？</h3>
+
+<p>先说说我的选择逻辑。Python 不用多讲，生态好、上手快，测试团队里基本没人不会。pytest 呢，比 unittest 灵活太多，fixture、参数化、插件机制，写起来很舒服。</p>
+
+<p>Appium 这边，很多人觉得它只是用来测手机 App 的。其实不然。智能座舱的中控屏、仪表盘，本质上就是个 Android 系统（或者 QNX 跑 Android 虚拟机）。Appium 通过 UI Automator 跟底层通信，能直接操作界面元素。</p>
+
+<div class="tip">
+  <strong>我的经验：</strong> 别一上来就追求全量自动化。我习惯先挑 20% 的高频回归用例做试点，跑通了再铺开。这样团队有信心，框架也能逐步打磨。
+</div>
+
+<p>这里有个对比表，帮你快速理解各层的关系：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>层级</th>
+      <th>技术组件</th>
+      <th>职责</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>脚本层</td>
+      <td>Python + pytest</td>
+      <td>用例编排、断言、报告生成</td>
+    </tr>
+    <tr>
+      <td>驱动层</td>
+      <td>Appium / UI Automator</td>
+      <td>设备通信、元素定位、手势操作</td>
+    </tr>
+    <tr>
+      <td>模式层</td>
+      <td>Page Object + 关键字驱动</td>
+      <td>页面抽象、操作封装、数据分离</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>17.2 Page Object 模式：让代码不再“牵一发动全身”</h3>
+
+<p>Page Object 模式，说白了就是把每个页面封装成一个类。页面上的元素、操作方法，都放在这个类里。测试用例只跟 Page Object 打交道，不直接碰 Appium 的 API。</p>
+
+<p>为什么要这么做？你想想看，座舱的 UI 迭代多频繁啊。今天这个按钮换个 ID，明天那个列表改个布局。如果测试代码里到处都是 <code>find_element_by_id</code>，改起来得疯掉。</p>
+
+<p>我给大家看个例子：</p>
+
+<pre><code># 主页 Page Object
+class HomePage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    # 元素定位集中管理
+    _nav_button = (By.ID, "com.example:id/nav_btn")
+    _volume_slider = (By.ID, "com.example:id/volume_slider")
+
+    def click_nav(self):
+        self.driver.find_element(*self._nav_button).click()
+
+    def set_volume(self, level):
+        slider = self.driver.find_element(*self._volume_slider)
+        # 滑动操作封装
+        ActionChains(self.driver).click_and_hold(slider).move_by_offset(level, 0).release().perform()
+</code></pre>
+
+<div class="highlight">
+  <strong>核心原则：</strong> 一个 Page Object 只对应一个页面。如果页面有多个 Tab 或弹窗，可以拆成子 Page Object。别把整个 App 塞进一个类里，那比没有模式还糟糕。
+</div>
+
+<h3>17.3 关键字驱动：让业务人员也能写用例</h3>
+
+<p>关键字驱动，其实就是把测试步骤抽象成“关键字”。比如“点击”、“输入”、“滑动”、“等待”。每个关键字对应一个函数。测试用例就变成了一张关键字表格。</p>
+
+<p>我个人习惯把关键字分成三层：</p>
+
+<ul>
+  <li><strong>基础关键字：</strong> 点击、输入、获取文本、滑动</li>
+  <li><strong>业务关键字：</strong> 打开导航、调节音量、切换驾驶模式</li>
+  <li><strong>复合关键字：</strong> 登录流程、导航到目的地、播放音乐</li>
+</ul>
+
+<p>举个例子，一个“调节音量到 50%”的用例，用关键字表格写出来就是：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>步骤</th>
+      <th>关键字</th>
+      <th>参数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>打开设置面板</td>
+      <td>无</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>滑动音量条</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>验证音量显示</td>
+      <td>50%</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>避坑指南：</strong> 我曾经在一个项目里把关键字粒度拆得太细，结果一个“点击”就写了 5 个关键字（点击按钮、点击文本、点击坐标...）。后来发现维护成本反而更高。记住：关键字粒度以“业务可理解”为准，别为了抽象而抽象。
+</div>
+
+<h3>17.4 数据驱动：一套脚本跑遍所有车型</h3>
+
+<p>数据驱动，就是把测试数据从代码里抽出来，放到外部文件里（Excel、YAML、JSON 都行）。pytest 的 <code>@pytest.mark.parametrize</code> 天然支持这个模式。</p>
+
+<p>座舱测试里，数据驱动特别适合做“多车型兼容”。比如不同车型的屏幕分辨率不同，按钮位置不同。你只需要维护一套 Page Object，然后给每个车型配一套定位数据。</p>
+
+<pre><code># 数据文件：car_data.yaml
+Model_S:
+  resolution: [1920, 720]
+  nav_button: "com.example.model_s:id/nav_btn"
+  volume_slider: "com.example.model_s:id/volume_slider"
+
+Model_X:
+  resolution: [2560, 1440]
+  nav_button: "com.example.model_x:id/nav_btn"
+  volume_slider: "com.example.model_x:id/volume_slider"
+</code></pre>
+
+<pre><code># 测试用例
+@pytest.mark.parametrize("car_model", ["Model_S", "Model_X"])
+def test_volume_control(car_model, load_car_data):
+    data = load_car_data[car_model]
+    home = HomePage(driver, data)
+    home.set_volume(50)
+    assert home.get_volume() == "50%"
+</code></pre>
+
+<p>你看，测试逻辑完全没变，换车型只需要换数据文件。这就是数据驱动的威力。</p>
+
+<h3>17.5 框架整体架构图</h3>
+
+<p>下面这张图，是我在实际项目中总结出来的框架分层结构。你可以把它当成搭建时的参考蓝图。</p>
+
+<svg viewBox="0 0 800 520" style="max-width:100%;height:auto;background:#f0f8ff;border-radius:8px;">
+  <text x="400" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">自动化测试框架分层架构</text>
+
+  <!-- 测试用例层 -->
+  <rect x="250" y="55" width="300" height="50" rx="6" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">测试用例层 (pytest)</text>
+
+  <!-- 箭头 -->
+  <line x1="400" y1="105" x2="400" y2="135" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="395,130 400,140 405,130" fill="#7f8c8d"/>
+
+  <!-- 关键字驱动层 -->
+  <rect x="200" y="140" width="400" height="50" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="400" y="170" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">关键字驱动层 (基础/业务/复合关键字)</text>
+
+  <!-- 箭头 -->
+  <line x1="400" y1="190" x2="400" y2="220" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="395,215 400,225 405,215" fill="#7f8c8d"/>
+
+  <!-- Page Object 层 -->
+  <rect x="200" y="225" width="400" height="50" rx="6" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="400" y="255" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">Page Object 层 (页面封装 + 元素定位)</text>
+
+  <!-- 箭头 -->
+  <line x1="400" y1="275" x2="400" y2="305" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="395,300 400,310 405,300" fill="#7f8c8d"/>
+
+  <!-- 数据驱动层 -->
+  <rect x="200" y="310" width="400" height="50" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="400" y="340" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">数据驱动层 (YAML/Excel/JSON 配置)</text>
+
+  <!-- 箭头 -->
+  <line x1="400" y1="360" x2="400" y2="390" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="395,385 400,395 405,385" fill="#7f8c8d"/>
+
+  <!-- 驱动层 -->
+  <rect x="200" y="395" width="400" height="50" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="425" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">驱动层 (Appium / UI Automator)</text>
+
+  <!-- 箭头 -->
+  <line x1="400" y1="445" x2="400" y2="470" stroke="#7f8c8d" stroke-width="2"/>
+  <polygon points="395,465 400,475 405,465" fill="#7f8c8d"/>
+
+  <!-- 设备层 -->
+  <rect x="250" y="475" width="300" height="35" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="400" y="497" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">设备层 (实车 / 模拟器 / 台架)</text>
+
+  <!-- 说明框 -->
+  <rect x="30" y="55" width="180" height="100" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="120" y="80" text-anchor="middle" font-size="12" fill="#856404" font-weight="bold">核心优势</text>
+  <text x="120" y="100" text-anchor="middle" font-size="11" fill="#856404">• 用例与实现解耦</text>
+  <text x="120" y="118" text-anchor="middle" font-size="11" fill="#856404">• 数据与逻辑分离</text>
+  <text x="120" y="136" text-anchor="middle" font-size="11" fill="#856404">• 跨车型复用</text>
+
+  <rect x="30" y="170" width="180" height="100" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="120" y="195" text-anchor="middle" font-size="12" fill="#856404" font-weight="bold">适用场景</text>
+  <text x="120" y="215" text-anchor="middle" font-size="11" fill="#856404">• 中控屏功能测试</text>
+  <text x="120" y="233" text-anchor="middle" font-size="11" fill="#856404">• 仪表盘显示验证</text>
+  <text x="120" y="251" text-anchor="middle" font-size="11" fill="#856404">• 多车型兼容测试</text>
+</svg>
+
+<h3>17.6 落地建议：从 0 到 1 怎么走</h3>
+
+<p>框架搭好了，怎么落地？我建议分三步走：</p>
+
+<ol>
+  <li><strong>先搭骨架：</strong> 选一个最简单的页面（比如主页），实现 Page Object + 一个关键字。跑通端到端流程。</li>
+  <li><strong>再填血肉：</strong> 逐步覆盖核心功能页面。每个页面只封装最常用的 3-5 个操作。别贪多。</li>
+  <li><strong>最后上数据：</strong> 等 Page Object 稳定了，再引入数据驱动。先做 2 个车型的对比，验证框架的扩展性。</li>
+</ol>
+
+<div class="tip">
+  <strong>一个小技巧：</strong> 我习惯在 pytest 的 conftest.py 里放 fixture，统一管理 driver 的初始化和清理。这样每个用例都不用关心设备连接的问题，专注写业务逻辑。
+</div>
+
+<p>嗯，框架这部分内容比较多，但核心就一句话：<strong>分层解耦，数据分离</strong>。你只要把 Page Object、关键字驱动、数据驱动这三块理清楚，后面不管接什么车型、什么屏幕，改起来都很快。</p>
+        <div class="footer-nav">
+            <a href="16.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="18.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

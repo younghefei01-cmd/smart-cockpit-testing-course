@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第13章 多屏互动测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第13章 多屏互动测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="active">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="active">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>13、多屏互动测试：仪表-中控-HUD三屏联动、副驾屏与后排屏交互、投屏（CarPlay/Android Auto）</h2>
+
+<p>多屏互动，说白了就是让座舱里这几块屏幕别各玩各的。我见过不少项目，单屏测得好好的，一联起来就出幺蛾子——要么延迟对不上，要么数据不同步，最离谱的一次是导航切到仪表盘，结果地图转了90度。</p>
+
+<p>这一章，我把多屏互动拆成三个维度来讲：<strong>主驾侧的三屏联动</strong>、<strong>副驾与后排的娱乐交互</strong>、以及<strong>手机投屏的兼容性测试</strong>。每个维度我都会结合项目里的实际坑点，给你一套可落地的测试策略。</p>
+
+<div class="highlight">
+  <p><strong>核心原则：</strong>多屏测试不是把单屏用例复制三份，而是关注「信息流」的同步性、一致性和优先级。屏幕越多，状态机越复杂。</p>
+</div>
+
+<h3>13.1 仪表-中控-HUD 三屏联动</h3>
+
+<p>这三块屏是驾驶核心区，任何信息错位都会直接影响驾驶安全。我习惯把联动场景分成三类：<strong>导航联动</strong>、<strong>媒体联动</strong>、<strong>告警联动</strong>。</p>
+
+<h4>13.1.1 导航联动测试</h4>
+
+<p>导航是最典型的三屏联动场景。中控发起导航，仪表盘显示简化路线，HUD投射转向箭头和距离。这里最容易出问题的不是功能本身，而是<strong>时机</strong>。</p>
+
+<ul>
+  <li><strong>发起导航的同步延迟</strong>：中控点击「开始导航」后，仪表和HUD必须在1秒内响应。我测过一台车，仪表要等3秒才显示路线，司机都开过路口了。</li>
+  <li><strong>路线重算的同步</strong>：偏航后中控重算路线，仪表和HUD必须同时更新。曾经遇到过仪表还显示旧路线，HUD已经切到新路线，司机不知道该信谁。</li>
+  <li><strong>信息密度差异</strong>：中控显示完整地图，仪表只显示车道级引导，HUD只显示箭头和距离。测试时要验证每个屏的信息裁剪是否正确，别把「前方500米右转」在HUD上显示成「前方500米」就没了。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的测试技巧：</strong>用手机录屏同时拍三块屏，后期逐帧分析延迟。肉眼很难察觉200ms以内的差异，但逐帧看就一清二楚。</p>
+</div>
+
+<h4>13.1.2 媒体联动测试</h4>
+
+<p>媒体信息在中控和仪表之间同步，HUD一般不参与。但这里有个容易忽略的点——<strong>封面图</strong>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>测试项</th>
+      <th>预期行为</th>
+      <th>常见问题</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>切歌/切电台</td>
+      <td>仪表同步显示歌名/电台名</td>
+      <td>仪表显示「未知歌曲」或上一首歌名</td>
+    </tr>
+    <tr>
+      <td>封面图同步</td>
+      <td>仪表显示专辑封面（如有）</td>
+      <td>封面图拉伸变形，或显示为默认图标</td>
+    </tr>
+    <tr>
+      <td>音量调节</td>
+      <td>仪表和中控音量条同步变化</td>
+      <td>仪表音量条卡在某个值不动</td>
+    </tr>
+    <tr>
+      <td>播放/暂停</td>
+      <td>仪表显示播放状态图标</td>
+      <td>暂停后仪表仍显示播放动画</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>嗯，这里要注意：封面图同步经常被忽略，但用户感知很强。我遇到过一台车，中控显示周杰伦的封面，仪表显示的是上一首的封面，用户直接投诉「仪表盘坏了」。</p>
+
+<h4>13.1.3 告警联动测试</h4>
+
+<p>告警是安全相关，优先级最高。三块屏的告警必须同时触发，且不能互相覆盖。</p>
+
+<ul>
+  <li><strong>低电量/低油量告警</strong>：中控弹窗、仪表亮灯、HUD显示警示图标。测试时要验证HUD的告警图标是否遮挡导航信息。</li>
+  <li><strong>ADAS告警</strong>：比如前碰撞预警，中控和HUD都要有视觉提示。我测过一台车，HUD闪红了，中控却安安静静——这会让副驾完全不知道发生了什么。</li>
+  <li><strong>告警优先级</strong>：多个告警同时发生时，高优先级告警必须覆盖低优先级。比如「车道偏离」和「前碰撞预警」同时触发，前碰撞预警必须优先显示。</li>
+</ul>
+
+<div class="warning">
+  <p><strong>避坑指南：</strong>我曾经遇到过HUD告警图标和中控导航箭头重叠的情况。测试时一定要把告警叠加在导航、媒体、电话等场景下跑，别只测单场景。</p>
+</div>
+
+<h3>13.2 副驾屏与后排屏交互</h3>
+
+<p>副驾屏和后排屏属于娱乐域，测试重点和主驾侧完全不同。这里不追求低延迟，但追求<strong>独立性</strong>和<strong>互斥逻辑</strong>。</p>
+
+<h4>13.2.1 副驾屏的独立性测试</h4>
+
+<p>副驾屏最常见的场景是看视频、操作导航（部分车型支持）、调节空调。测试时要确保副驾的操作不影响主驾。</p>
+
+<ul>
+  <li><strong>视频播放不影响中控</strong>：副驾看视频，中控导航不能卡顿。我测过一台车，副驾一开视频，中控地图帧率直接掉到15fps。</li>
+  <li><strong>副驾操作导航</strong>：如果副驾可以设置导航目的地，中控必须同步更新路线，但副驾屏不能接管主驾的驾驶信息。</li>
+  <li><strong>副驾屏息屏策略</strong>：车辆行驶中，副驾屏是否自动关闭视频？有些法规要求行驶中副驾屏不能播放视频，测试时要验证这个逻辑。</li>
+</ul>
+
+<h4>13.2.2 后排屏的交互测试</h4>
+
+<p>后排屏通常独立于前排，但有些车型支持「后排控制前排」的功能。这里测试要关注<strong>权限管理</strong>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>场景</th>
+      <th>测试点</th>
+      <th>预期结果</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>后排独立播放</td>
+      <td>后排屏播放视频，前排不受影响</td>
+      <td>前排音频不中断，后排通过蓝牙耳机收听</td>
+    </tr>
+    <tr>
+      <td>后排控制媒体</td>
+      <td>后排切歌，前排同步切换</td>
+      <td>中控和仪表同步更新歌名</td>
+    </tr>
+    <tr>
+      <td>后排控制空调</td>
+      <td>后排调节温度，前排显示同步</td>
+      <td>中控空调界面温度数值变化</td>
+    </tr>
+    <tr>
+      <td>后排锁定</td>
+      <td>前排锁定后排屏</td>
+      <td>后排屏显示「已锁定」或黑屏</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我个人习惯把后排屏测试分成「独立模式」和「联动模式」两套用例。独立模式测隔离性，联动模式测权限和同步。</p>
+
+<h3>13.3 投屏测试：CarPlay / Android Auto</h3>
+
+<p>投屏测试是最头疼的部分，因为手机端和车机端是两个团队开发的，出了问题互相甩锅是常态。我总结了一套「<strong>三端定位法</strong>」——先确定问题是手机端、车机端还是连接链路。</p>
+
+<h4>13.3.1 连接与断开</h4>
+
+<p>连接是投屏的第一步，也是最容易出问题的环节。</p>
+
+<ul>
+  <li><strong>有线连接</strong>：插上USB后，车机是否自动识别？识别时间是否在3秒以内？我遇到过一根数据线只能充电不能传数据的情况。</li>
+  <li><strong>无线连接</strong>：Wi-Fi和蓝牙的配对流程是否顺畅？有些车需要先连蓝牙再连Wi-Fi，顺序错了就连不上。</li>
+  <li><strong>断开重连</strong>：拔掉数据线或离开蓝牙范围后，车机是否自动切回本地界面？重连时是否恢复之前的应用状态？</li>
+</ul>
+
+<div class="tip">
+  <p><strong>我的经验：</strong>无线投屏的兼容性测试，至少要用市面上Top 20的手机型号跑一遍。iPhone还好，Android碎片化严重，同一个车机配不同手机表现可能天差地别。</p>
+</div>
+
+<h4>13.3.2 应用映射与交互</h4>
+
+<p>投屏后，手机应用映射到车机屏幕，交互方式从触控变成车机旋钮/触控。这里测试要关注<strong>交互适配</strong>。</p>
+
+<ul>
+  <li><strong>导航应用</strong>：高德/百度地图在车机上的UI是否完整？按钮是否可点击？我测过一台车，导航的「搜索」按钮在车机上被切掉了一半。</li>
+  <li><strong>媒体应用</strong>：网易云/QQ音乐的播放列表是否可滚动？封面图是否正常显示？</li>
+  <li><strong>电话/信息</strong>：来电显示是否正常？语音助手是否可用？</li>
+  <li><strong>分屏模式</strong>：CarPlay支持分屏显示，测试时要验证左右两侧的应用是否独立操作。</li>
+</ul>
+
+<h4>13.3.3 多屏投屏冲突</h4>
+
+<p>投屏时如果车机本身也在多屏联动，就会产生冲突。这是测试的深水区。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>冲突场景</th>
+      <th>测试方法</th>
+      <th>预期行为</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>投屏导航 vs 车机导航</td>
+      <td>先用车机导航，再连接CarPlay导航</td>
+      <td>车机导航退出，CarPlay导航接管</td>
+    </tr>
+    <tr>
+      <td>投屏媒体 vs 车机媒体</td>
+      <td>车机播放电台，连接CarPlay播放音乐</td>
+      <td>电台暂停，CarPlay音乐播放</td>
+    </tr>
+    <tr>
+      <td>投屏电话 vs 车机电话</td>
+      <td>车机蓝牙通话中，连接CarPlay</td>
+      <td>通话不中断，CarPlay接管通话界面</td>
+    </tr>
+    <tr>
+      <td>投屏告警 vs 车机告警</td>
+      <td>CarPlay导航中，车机触发ADAS告警</td>
+      <td>告警覆盖CarPlay界面，告警结束后恢复</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>你想想看，如果用户正在用CarPlay导航，突然车机弹出一个低电量告警，这时候CarPlay的导航界面应该被遮挡还是缩小？不同车厂的处理方式不一样，但测试时必须明确这个策略。</p>
+
+<h3>13.4 多屏互动的测试框架</h3>
+
+<p>最后，我画了一张多屏互动的测试框架图，帮你理清整体逻辑。</p>
+
+<svg viewBox="0 0 800 520" style="max-width:100%;height:auto;margin:20px 0;">
+  <rect width="800" height="520" fill="#f0f8ff" rx="8"/>
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">多屏互动测试框架</text>
+
+  <!-- 主节点：多屏互动 -->
+  <rect x="300" y="60" width="200" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="90" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">多屏互动测试</text>
+
+  <!-- 三个分支 -->
+  <line x1="400" y1="110" x2="400" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="140" x2="130" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="140" x2="400" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="140" x2="670" y2="140" stroke="#7f8c8d" stroke-width="2"/>
+
+  <!-- 分支1：三屏联动 -->
+  <rect x="30" y="140" width="200" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="130" y="170" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">三屏联动</text>
+
+  <line x1="130" y1="190" x2="130" y2="220" stroke="#7f8c8d" stroke-width="2"/>
+  <rect x="30" y="220" width="200" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="130" y="245" text-anchor="middle" font-size="13" fill="#856404">导航 / 媒体 / 告警</text>
+
+  <!-- 分支2：副驾后排 -->
+  <rect x="300" y="140" width="200" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="400" y="170" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">副驾 / 后排屏</text>
+
+  <line x1="400" y1="190" x2="400" y2="220" stroke="#7f8c8d" stroke-width="2"/>
+  <rect x="300" y="220" width="200" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="400" y="245" text-anchor="middle" font-size="13" fill="#856404">独立性 / 权限 / 互斥</text>
+
+  <!-- 分支3：投屏 -->
+  <rect x="570" y="140" width="200" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="670" y="170" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">CarPlay / Android Auto</text>
+
+  <line x1="670" y1="190" x2="670" y2="220" stroke="#7f8c8d" stroke-width="2"/>
+  <rect x="570" y="220" width="200" height="40" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="670" y="245" text-anchor="middle" font-size="13" fill="#856404">连接 / 映射 / 冲突</text>
+
+  <!-- 底部：测试维度 -->
+  <line x1="130" y1="260" x2="130" y2="300" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="260" x2="400" y2="300" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="670" y1="260" x2="670" y2="300" stroke="#7f8c8d" stroke-width="2"/>
+
+  <rect x="30" y="300" width="740" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="400" y="330" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">测试维度：延迟 / 一致性 / 优先级 / 独立性 / 兼容性</text>
+
+  <!-- 底部：测试方法 -->
+  <line x1="400" y1="350" x2="400" y2="380" stroke="#7f8c8d" stroke-width="2"/>
+  <rect x="150" y="380" width="500" height="50" rx="8" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="400" y="410" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">测试方法：逐帧分析 / 多机录屏 / 自动化脚本 / 实车路测</text>
+
+  <!-- 说明框 -->
+  <rect x="150" y="450" width="500" height="50" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="400" y="470" text-anchor="middle" font-size="13" fill="#856404">核心：多屏测试不是单屏用例的叠加，而是信息流的端到端验证</text>
+  <text x="400" y="488" text-anchor="middle" font-size="13" fill="#856404">每个屏幕都是状态机，联动测试就是验证状态机之间的通信是否正确</text>
+</svg>
+
+<p>这张图把多屏互动拆成三个分支，每个分支再往下落到具体的测试维度和方法。你测试的时候，可以拿这张图当checklist，看看哪个分支还没覆盖到。</p>
+
+<div class="warning">
+  <p><strong>最后提醒一句：</strong>多屏互动测试最怕「单场景通过，多场景崩盘」。我建议你至少设计20个组合场景，把导航+媒体+告警+投屏随机组合，跑一轮压力测试。很多问题只有在多任务并发时才会暴露。</p>
+</div>
+        <div class="footer-nav">
+            <a href="12.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="14.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第27章 法规与认证测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第27章 法规与认证测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="active">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="active">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>27、法规与认证测试：ECE R21、GB 11552、Euro NCAP、C-NCAP智能座舱评分项</h2>
+
+<p>做座舱测试做到一定阶段，你会发现一个绕不开的坎——法规认证。说白了，你功能做得再花哨，过不了法规，车就上不了市。我最早接触这块是在一个出口欧洲的项目上，当时觉得「不就是个内饰件嘛，能有多严？」结果被 ECE R21 折腾得够呛。今天咱们就把这几个核心法规和评分体系捋清楚。</p>
+
+<h3>27.1 法规体系概览</h3>
+
+<p>智能座舱涉及的法规，主要分两大类：<strong>强制认证</strong>和<strong>安全评分</strong>。前者是准入门槛，后者是市场竞争力。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>法规/标准</th>
+      <th>适用范围</th>
+      <th>核心关注点</th>
+      <th>我的经验</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ECE R21</td>
+      <td>欧盟（出口欧洲必过）</td>
+      <td>内饰件突出物、吸能、头部碰撞</td>
+      <td>中控屏边缘倒角不够，直接卡住</td>
+    </tr>
+    <tr>
+      <td>GB 11552</td>
+      <td>中国（国标强制）</td>
+      <td>乘员舱内部凸出物、吸能区</td>
+      <td>和 ECE R21 有差异，不能直接套用</td>
+    </tr>
+    <tr>
+      <td>Euro NCAP</td>
+      <td>欧洲新车评价</td>
+      <td>乘员保护、儿童安全、VRU</td>
+      <td>座舱交互逻辑会影响扣分</td>
+    </tr>
+    <tr>
+      <td>C-NCAP</td>
+      <td>中国新车评价</td>
+      <td>乘员保护、主动安全、智能座舱</td>
+      <td>2024版新增了座舱交互评分项</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlight">
+  <p><strong>关键认知：</strong>ECE R21 和 GB 11552 是「底线」，不过不行；Euro NCAP 和 C-NCAP 是「加分项」，决定你的车能拿几星。</p>
+</div>
+
+<h3>27.2 ECE R21：内饰件突出物与吸能</h3>
+
+<p>ECE R21 全称是《关于车辆内饰件认证的统一规定》。它主要管两件事：<strong>突出物不能伤人</strong>，<strong>碰撞时能吸能</strong>。</p>
+
+<h4>27.2.1 核心测试项</h4>
+
+<ul>
+  <li><strong>头部碰撞区测试</strong>：用一个直径 165mm 的半球形冲击头，以 24.1km/h 的速度撞击内饰件。要求减速度不超过 80g，且持续超过 80g 的时间不超过 3ms。</li>
+  <li><strong>突出物检查</strong>：所有内饰件表面，圆角半径必须 ≥ 2.5mm。我遇到过中控屏金属边框，CNC 倒角做小了 0.3mm，直接被退回整改。</li>
+  <li><strong>吸能材料要求</strong>：仪表板、门板等区域，必须使用能量吸收材料，比如发泡聚丙烯（EPP）或聚氨酯泡沫。</li>
+</ul>
+
+<div class="tip">
+  <p><strong>避坑指南：</strong>我曾经在项目里发现，中控屏下方的储物盒盖板，打开状态下边缘正好在头部碰撞轨迹上。测试时直接爆了。后来加了一个限位机构，让盖板在碰撞时自动闭合。这个细节，很多设计工程师会忽略。</p>
+</div>
+
+<h3>27.3 GB 11552：中国版内饰件法规</h3>
+
+<p>GB 11552 和 ECE R21 很像，但细节上有差异。我建议你直接看国标原文，别偷懒。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>对比项</th>
+      <th>ECE R21</th>
+      <th>GB 11552</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>冲击速度</td>
+      <td>24.1 km/h</td>
+      <td>24.1 km/h（一致）</td>
+    </tr>
+    <tr>
+      <td>减速度限值</td>
+      <td>80g / 3ms</td>
+      <td>80g / 3ms（一致）</td>
+    </tr>
+    <tr>
+      <td>圆角半径</td>
+      <td>≥ 2.5mm</td>
+      <td>≥ 2.5mm（一致）</td>
+    </tr>
+    <tr>
+      <td>特殊要求</td>
+      <td>无</td>
+      <td>对后座娱乐屏有额外凸出物限制</td>
+    </tr>
+    <tr>
+      <td>测试环境</td>
+      <td>室温 23±5°C</td>
+      <td>室温 23±5°C，但湿度要求更严</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <p><strong>注意：</strong>GB 11552 对后座娱乐屏的凸出物要求比 ECE R21 更严格。如果你的车有后排屏幕，务必单独做一轮 GB 11552 的凸出物检查。我见过一个项目，后排屏支架突出 8mm，直接不合格。</p>
+</div>
+
+<h3>27.4 Euro NCAP：智能座舱评分项</h3>
+
+<p>Euro NCAP 2023 版开始，正式把「智能座舱」纳入评分体系。它不叫「座舱」，而是归在「乘员保护」和「安全辅助」两个大类里。</p>
+
+<h4>27.4.1 评分维度</h4>
+
+<ul>
+  <li><strong>乘员状态监测</strong>：驾驶员疲劳监测、分心监测。要求系统能在 30 秒内检测到闭眼或视线偏离，并给出警告。</li>
+  <li><strong>儿童存在检测</strong>：锁车后，如果检测到后排有儿童，必须在 10 秒内发出警报。这个功能我测试过，难点在于区分儿童和宠物。</li>
+  <li><strong>交互安全</strong>：中控屏操作不能过度分散驾驶员注意力。比如，驾驶中禁止播放视频，或者要求某些功能必须在停车时才能操作。</li>
+</ul>
+
+<div class="highlight">
+  <p><strong>评分逻辑：</strong>Euro NCAP 采用「扣分制」。每个维度满分 5 分，不达标就扣。比如，疲劳监测漏报一次扣 1 分，误报一次扣 0.5 分。最终得分决定星级。</p>
+</div>
+
+<h3>27.5 C-NCAP 2024：智能座舱评分项</h3>
+
+<p>C-NCAP 2024 版是今年的大热点。它专门新增了「智能座舱」章节，总分 15 分，占整体评分权重 15%。</p>
+
+<h4>27.5.1 评分项拆解</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>评分项</th>
+      <th>分值</th>
+      <th>测试要求</th>
+      <th>我的建议</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>语音交互</td>
+      <td>5 分</td>
+      <td>唤醒率 ≥ 95%，识别率 ≥ 90%，支持连续对话</td>
+      <td>方言识别是难点，建议提前采集样本</td>
+    </tr>
+    <tr>
+      <td>触控交互</td>
+      <td>3 分</td>
+      <td>盲操作成功率 ≥ 80%，反馈延迟 ≤ 100ms</td>
+      <td>物理按键和触控反馈要结合</td>
+    </tr>
+    <tr>
+      <td>驾驶员监测</td>
+      <td>4 分</td>
+      <td>疲劳检测准确率 ≥ 85%，分心检测准确率 ≥ 80%</td>
+      <td>戴眼镜和口罩的场景要单独测</td>
+    </tr>
+    <tr>
+      <td>儿童遗忘提醒</td>
+      <td>3 分</td>
+      <td>锁车后 15 秒内检测到儿童，发出声光报警</td>
+      <td>注意区分儿童和书包，否则误报率很高</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tip">
+  <p><strong>实战技巧：</strong>C-NCAP 的语音交互测试，会使用标准语料库，包含普通话、粤语、四川话。我建议你在开发阶段就引入方言识别模型，别等到送测前才补。我曾经有个项目，粤语识别率只有 60%，最后一个月紧急优化，差点没赶上。</p>
+</div>
+
+<h3>27.6 法规测试流程与避坑</h3>
+
+<p>不管哪个法规，测试流程都差不多。我总结了一个通用流程，你照着走基本不会漏。</p>
+
+<ol>
+  <li><strong>法规解读</strong>：拿到最新版法规原文，逐条拆解。别信二手资料，我吃过亏。</li>
+  <li><strong>设计评审</strong>：在造型冻结前，让法规工程师介入。中控屏边缘、储物盒位置、座椅调节按钮，这些地方最容易出问题。</li>
+  <li><strong>样件准备</strong>：按照法规要求制作测试样件。注意，样件状态要和量产一致，别用 3D 打印件代替。</li>
+  <li><strong>预测试</strong>：在内部实验室先跑一轮。我习惯把预测试的通过率定在 110%，也就是比法规严 10%。</li>
+  <li><strong>正式送测</strong>：送到有资质的第三方实验室。记得提前预约，旺季排队要 2-3 个月。</li>
+  <li><strong>整改与复测</strong>：如果失败，分析原因，修改设计，重新送测。一般有 1-2 次免费复测机会。</li>
+</ol>
+
+<div class="warning">
+  <p><strong>血的教训：</strong>我曾经在 ECE R21 测试中，因为中控屏的背光模组在碰撞时碎裂，导致减速度超标。原因是背光模组和屏幕支架之间没有缓冲垫。后来在所有屏幕组件之间加了 1mm 的硅胶垫，问题解决。这种细节，法规不会告诉你，只能靠经验积累。</p>
+</div>
+
+<h3>27.7 知识体系总览</h3>
+
+<p>下面这张图，把本章的核心逻辑串起来了。你保存下来，做项目时对照着看。</p>
+
+<svg viewBox="0 0 800 500" style="max-width:100%; height:auto; background:#f0f8ff; border-radius:8px;">
+  <title>法规与认证测试知识体系</title>
+  
+  <!-- 标题 -->
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">法规与认证测试知识体系</text>
+  
+  <!-- 顶层：法规分类 -->
+  <rect x="250" y="70" width="300" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="100" text-anchor="middle" font-size="16" fill="#ffffff" font-weight="bold">法规与认证测试</text>
+  
+  <!-- 箭头分叉 -->
+  <line x1="400" y1="120" x2="400" y2="150" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="150" x2="200" y2="150" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="400" y1="150" x2="600" y2="150" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="200" y1="150" x2="200" y2="180" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="600" y1="150" x2="600" y2="180" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <!-- 左侧：强制认证 -->
+  <rect x="100" y="180" width="200" height="40" rx="6" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="200" y="206" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">强制认证</text>
+  
+  <!-- 右侧：安全评分 -->
+  <rect x="500" y="180" width="200" height="40" rx="6" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="600" y="206" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">安全评分</text>
+  
+  <!-- 强制认证子项 -->
+  <line x1="200" y1="220" x2="200" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="200" y1="250" x2="120" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="200" y1="250" x2="280" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="120" y1="250" x2="120" y2="280" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="280" y1="250" x2="280" y2="280" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <rect x="40" y="280" width="160" height="40" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="120" y="306" text-anchor="middle" font-size="13" fill="#ffffff">ECE R21</text>
+  
+  <rect x="200" y="280" width="160" height="40" rx="6" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="280" y="306" text-anchor="middle" font-size="13" fill="#ffffff">GB 11552</text>
+  
+  <!-- 安全评分子项 -->
+  <line x1="600" y1="220" x2="600" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="600" y1="250" x2="520" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="600" y1="250" x2="680" y2="250" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="520" y1="250" x2="520" y2="280" stroke="#7f8c8d" stroke-width="2"/>
+  <line x1="680" y1="250" x2="680" y2="280" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <rect x="440" y="280" width="160" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="520" y="306" text-anchor="middle" font-size="13" fill="#ffffff">Euro NCAP</text>
+  
+  <rect x="600" y="280" width="160" height="40" rx="6" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="680" y="306" text-anchor="middle" font-size="13" fill="#ffffff">C-NCAP</text>
+  
+  <!-- 底部：测试流程 -->
+  <line x1="400" y1="320" x2="400" y2="360" stroke="#7f8c8d" stroke-width="2"/>
+  
+  <rect x="250" y="360" width="300" height="40" rx="6" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+  <text x="400" y="386" text-anchor="middle" font-size="14" fill="#ffffff" font-weight="bold">测试流程：解读 → 评审 → 样件 → 预测试 → 送测 → 整改</text>
+  
+  <!-- 说明框 -->
+  <rect x="50" y="430" width="700" height="50" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="400" y="452" text-anchor="middle" font-size="13" fill="#856404">核心原则：强制认证是底线，安全评分是竞争力。测试前置，预测试从严。</text>
+  <text x="400" y="470" text-anchor="middle" font-size="12" fill="#856404">每个法规的细节差异，必须在设计阶段就识别并规避。</text>
+</svg>
+
+<p>嗯，法规认证这块，说白了就是「细节决定成败」。你设计得再漂亮，一个圆角没倒好，就得重来。我建议你把这些法规的 checklist 做成模板，每个项目启动时直接套用。省时省力，还不会漏项。</p>
+        <div class="footer-nav">
+            <a href="26.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="28.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>

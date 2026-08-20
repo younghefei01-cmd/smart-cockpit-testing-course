@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第11章 安全测试</title>
+    <style>
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        .double-border {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #f1c40f;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.2), inset 0 1px 0 0 #fff8e0;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+        }
+        .sidebar {
+            background: #fefcf5;
+            border-right: 2px solid #fdebb3;
+            padding: 24px 16px;
+        }
+        .sidebar h3 {
+            font-size: 1.4rem;
+            color: #b45f06;
+            border-left: 5px solid #f39c12;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+        .mobile-chapter-nav {
+            display: none;
+        }
+        .chapter-list {
+            list-style: none;
+        }
+        .chapter-list li {
+            margin-bottom: 6px;
+        }
+        .chapter-list a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .chapter-list a:hover {
+            background: #fdebd0;
+            transform: translateX(3px);
+        }
+        .chapter-list .active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
+        .main-content {
+            padding: 30px 35px;
+            background: white;
+            min-width: 0;
+        }
+        .course-title-top {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin: 4px 0 24px;
+            overflow-wrap: anywhere;
+        }
+        .footer-nav {
+            margin-top: 45px;
+            padding-top: 20px;
+            border-top: 2px solid #f0e6d2;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .footer-nav a {
+            padding: 8px 24px;
+            background: #f1f5f9;
+            text-decoration: none;
+            color: #1e40af;
+            border-radius: 40px;
+            font-weight: 500;
+            transition: 0.2s;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.22);
+        }
+        .footer-nav a:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.9rem;
+        }
+        h2 { color: #1e3a8a; border-left: 6px solid #f59e0b; padding-left: 15px; margin: 20px 0 15px; }
+        h3 { color: #2c3e50; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; }
+        ul, ol { padding-left: 1.5rem; margin: 12px 0; }
+        pre {
+            background: #2d2f36; color: #f8f8f2; padding: 15px; border-radius: 12px;
+            overflow-x: auto; font-family: 'JetBrains Mono', monospace; margin: 15px 0;
+        }
+        code { overflow-wrap: anywhere; }
+        .main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #fefce8 !important;
+            color: #1f2937 !important;
+        }
+        .main-content table tr {
+            background: transparent !important;
+            color: #1f2937 !important;
+        }
+        .main-content table th,
+        .main-content table td {
+            border: 1px solid #fcd34d;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            background: #fffdf0 !important;
+            color: #1f2937 !important;
+            overflow-wrap: anywhere;
+        }
+        .main-content table th {
+            background: #fffbeb !important;
+            color: #111827 !important;
+            font-weight: 700;
+        }
+        .main-content table th *,
+        .main-content table td * {
+            color: inherit !important;
+            background: transparent !important;
+        }
+        .main-content table code {
+            color: #111827 !important;
+            background: rgba(15, 23, 42, 0.08) !important;
+            padding: 0.08rem 0.28rem;
+            border-radius: 0.28rem;
+        }
+        svg, img, video, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        .tip, .warning, .highlight {
+            padding: 12px 18px; border-radius: 16px; margin: 15px 0;
+        }
+        .tip { background: #e0f2fe; border-left: 6px solid #0ea5e9; }
+        .warning { background: #fee2e2; border-left: 6px solid #ef4444; }
+        .highlight { background: #fef9c3; border: 1px solid #facc15; }
+        @media (max-width: 860px) {
+            html, body { overflow-x: hidden; }
+            body { padding: 12px; }
+            .container { display: block; }
+            .sidebar { display: none; }
+            .mobile-chapter-nav {
+                display: block;
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 1000;
+                width: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                pointer-events: none;
+            }
+            .mobile-chapter-nav summary {
+                min-height: 46px;
+                max-width: calc(100vw - 28px);
+                padding: 8px 13px;
+                border-radius: 12px;
+                background: #fff7df;
+                border: 1px solid #f7d682;
+                box-shadow: 0 8px 20px rgba(146, 64, 14, 0.18);
+                color: #92400e;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                list-style: none;
+                user-select: none;
+                pointer-events: auto;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+                position: relative;
+                z-index: 1002;
+            }
+            .mobile-chapter-nav summary::-webkit-details-marker { display: none; }
+            .mobile-nav-current {
+                color: #1e40af;
+                font-size: 0.92rem;
+                font-weight: 600;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .mobile-chapter-nav .chapter-list {
+                display: none;
+                margin: 0;
+                padding: 70px 14px 18px;
+                width: min(84vw, 340px);
+                max-height: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: #fefcf5;
+                border-right: 2px solid #fdebb3;
+                box-shadow: 14px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 1001;
+                pointer-events: auto;
+            }
+            .mobile-chapter-nav[open] .chapter-list { display: block; }
+            .mobile-chapter-nav .chapter-list a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                z-index: 1002;
+                pointer-events: auto;
+            }
+            .main-content {
+                padding: 24px 18px;
+                position: relative;
+                z-index: 1;
+            }
+            .main-content a {
+                position: relative;
+                z-index: 2;
+                pointer-events: auto;
+            }
+            .footer-nav {
+                flex-wrap: wrap;
+                position: relative;
+                z-index: 30;
+                pointer-events: auto;
+            }
+            .footer-nav a { flex: 1 1 120px; min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 31; pointer-events: auto; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="double-border">
+    <details class="mobile-chapter-nav">
+        <summary><span>📚 课程目录</span><span class="mobile-nav-current">第11章 安全测试</span></summary>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="active">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </details>
+<div class="container">
+    <div class="sidebar">
+        <h3>📚 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html" class="">第1章 智能座舱概述</a></li>
+            <li><a href="02.html" class="">第2章 测试策略总览</a></li>
+            <li><a href="03.html" class="">第3章 需求分析与测试设计</a></li>
+            <li><a href="04.html" class="">第4章 功能测试</a></li>
+            <li><a href="05.html" class="">第5章 HUD抬头显示测试</a></li>
+            <li><a href="06.html" class="">第6章 网络与通信测试</a></li>
+            <li><a href="07.html" class="">第7章 诊断测试</a></li>
+            <li><a href="08.html" class="">第8章 OTA测试</a></li>
+            <li><a href="09.html" class="">第9章 性能测试</a></li>
+            <li><a href="10.html" class="">第10章 稳定性测试</a></li>
+            <li><a href="11.html" class="active">第11章 安全测试</a></li>
+            <li><a href="12.html" class="">第12章 交互与用户体验测试</a></li>
+            <li><a href="13.html" class="">第13章 多屏互动测试</a></li>
+            <li><a href="14.html" class="">第14章 音视频测试</a></li>
+            <li><a href="15.html" class="">第15章 传感器测试</a></li>
+            <li><a href="16.html" class="">第16章 座舱仿真与HIL测试</a></li>
+            <li><a href="17.html" class="">第17章 自动化测试框架</a></li>
+            <li><a href="18.html" class="">第18章 CI/CD集成</a></li>
+            <li><a href="19.html" class="">第19章 测试环境管理</a></li>
+            <li><a href="20.html" class="">第20章 缺陷管理</a></li>
+            <li><a href="21.html" class="">第21章 测试度量与KPI</a></li>
+            <li><a href="22.html" class="">第22章 兼容性测试</a></li>
+            <li><a href="23.html" class="">第23章 本地化测试</a></li>
+            <li><a href="24.html" class="">第24章 电源管理测试</a></li>
+            <li><a href="25.html" class="">第25章 热管理测试</a></li>
+            <li><a href="26.html" class="">第26章 EMC测试</a></li>
+            <li><a href="27.html" class="">第27章 法规与认证测试</a></li>
+            <li><a href="28.html" class="">第28章 路测与实车验证</a></li>
+            <li><a href="29.html" class="">第29章 测试报告与复盘</a></li>
+            <li><a href="30.html" class="">第30章 未来趋势与挑战</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="course-title-top">《智能座舱测试策略从规划到执行》</div>
+<h2>11、安全测试：功能安全、网络安全与数据隐私</h2>
+
+<p>安全测试这块，说实话是智能座舱测试里最「硬」的部分。它不像功能测试那样直观——你点一下按钮，屏幕亮了就是过了。安全测试很多时候是在验证「万一出了事，系统能不能兜住」。</p>
+
+<p>我参与过好几个座舱项目，安全测试的投入往往被低估。团队总觉得「先跑通功能再说」，结果到了验收阶段，发现 ASIL 等级没达标，或者渗透测试一打就穿。嗯，那时候再回头补，代价就大了。</p>
+
+<p>这一章，我把安全测试拆成四个维度来讲：功能安全、网络安全、渗透测试、数据隐私合规。每个维度我都会结合项目里的实际案例，帮你理清测试策略。</p>
+
+<div class="highlight">
+  <strong>核心观点：</strong> 安全测试不是「做不做」的问题，而是「做到什么程度」的问题。ASIL 等级、网络安全目标、隐私合规要求，决定了你的测试深度和投入。
+</div>
+
+<!-- SVG: 安全测试四维框架图 -->
+<svg viewBox="0 0 800 420" style="max-width:100%;height:auto;margin:20px 0;">
+  <rect width="800" height="420" fill="#f0f8ff" rx="8"/>
+  <text x="400" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">智能座舱安全测试四维框架</text>
+  
+  <!-- 中心节点 -->
+  <rect x="300" y="160" width="200" height="60" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="400" y="196" text-anchor="middle" font-size="18" font-weight="bold" fill="#ffffff">安全测试策略</text>
+  
+  <!-- 四个维度节点 -->
+  <rect x="50" y="80" width="160" height="50" rx="8" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  <text x="130" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">功能安全</text>
+  <text x="130" y="125" text-anchor="middle" font-size="11" fill="#ffffff">ISO 26262 / ASIL</text>
+  
+  <rect x="590" y="80" width="160" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+  <text x="670" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">网络安全</text>
+  <text x="670" y="125" text-anchor="middle" font-size="11" fill="#ffffff">ISO 21434</text>
+  
+  <rect x="50" y="280" width="160" height="50" rx="8" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="130" y="310" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">渗透测试</text>
+  <text x="130" y="325" text-anchor="middle" font-size="11" fill="#ffffff">攻击模拟</text>
+  
+  <rect x="590" y="280" width="160" height="50" rx="8" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+  <text x="670" y="310" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">数据隐私</text>
+  <text x="670" y="325" text-anchor="middle" font-size="11" fill="#ffffff">合规 / 脱敏</text>
+  
+  <!-- 连接线 -->
+  <line x1="210" y1="130" x2="300" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="590" y1="130" x2="500" y2="180" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="210" y1="310" x2="300" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="590" y1="310" x2="500" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- 箭头定义 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7f8c8d"/>
+    </marker>
+  </defs>
+  
+  <!-- 底部说明框 -->
+  <rect x="100" y="360" width="600" height="45" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="400" y="380" text-anchor="middle" font-size="13" fill="#856404">四个维度相互关联：功能安全关注系统失效，网络安全关注恶意攻击，渗透测试验证防护能力，数据隐私确保合规</text>
+  <text x="400" y="396" text-anchor="middle" font-size="13" fill="#856404">测试策略需要覆盖所有维度，缺一不可</text>
+</svg>
+
+<h3>11.1 功能安全与 ISO 26262 ASIL 等级</h3>
+
+<p>功能安全，说白了就是「系统出故障时，不能伤到人」。ISO 26262 是汽车行业的功能安全标准，它把风险等级分成 A、B、C、D 四个 ASIL 等级。D 级最高，比如刹车系统；A 级最低，比如一些非安全相关的信息娱乐功能。</p>
+
+<p>智能座舱里哪些功能涉及功能安全？我列几个常见的：</p>
+
+<ul>
+  <li><strong>仪表盘显示</strong>——车速、故障灯如果显示错误，可能误导驾驶员</li>
+  <li><strong>倒车影像 / 360 环视</strong>——延迟或卡顿可能导致碰撞</li>
+  <li><strong>驾驶员监控系统 (DMS)</strong>——疲劳检测失效，后果很严重</li>
+  <li><strong>语音控制关键功能</strong>——比如语音调高空调温度，误触发可能影响驾驶</li>
+</ul>
+
+<p>我个人习惯，在项目启动阶段就拉一个功能安全矩阵。把每个功能对应的 ASIL 等级标出来，然后决定测试策略。举个例子：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>功能模块</th>
+      <th>ASIL 等级</th>
+      <th>测试重点</th>
+      <th>测试方法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>车速显示</td>
+      <td>ASIL B</td>
+      <td>数据准确性、刷新率、故障注入</td>
+      <td>HIL 测试 + 故障注入</td>
+    </tr>
+    <tr>
+      <td>倒车影像</td>
+      <td>ASIL B</td>
+      <td>延迟 &lt; 200ms、图像完整性</td>
+      <td>延迟测量 + 图像质量分析</td>
+    </tr>
+    <tr>
+      <td>DMS 疲劳检测</td>
+      <td>ASIL C</td>
+      <td>误报率、漏报率、响应时间</td>
+      <td>场景模拟 + 数据回灌</td>
+    </tr>
+    <tr>
+      <td>空调控制</td>
+      <td>QM</td>
+      <td>功能正确性</td>
+      <td>手动 / 自动化功能测试</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tip">
+  <strong>我的经验：</strong> 很多团队只关注 ASIL D 的功能，忽略了 ASIL B 和 C。其实座舱里 ASIL B 的功能最多，测试覆盖不全的话，审核时会被 challenge。我建议至少对 ASIL B 以上的功能做故障注入测试。
+</div>
+
+<p>功能安全测试的核心方法，我总结为三步：</p>
+
+<ol>
+  <li><strong>安全机制验证</strong>——检查系统有没有设计安全机制（比如看门狗、ECC 校验、冗余通道）</li>
+  <li><strong>故障注入测试</strong>——人为制造故障（比如内存错误、通信中断、传感器失效），看系统能不能正确响应</li>
+  <li><strong>安全确认测试</strong>——在整车或 HIL 环境下，验证安全目标是否达成</li>
+</ol>
+
+<p>我曾经在一个项目里遇到一个问题：仪表盘的故障灯在 CAN 总线丢包时，竟然延迟了 3 秒才点亮。嗯，3 秒在功能安全里是不可接受的。后来我们加了一个心跳机制，每 100ms 检测一次，才把延迟降到 200ms 以内。</p>
+
+<h3>11.2 网络安全与 ISO 21434</h3>
+
+<p>网络安全和功能安全不一样。功能安全防的是「系统自己出错」，网络安全防的是「有人故意搞破坏」。ISO 21434 是汽车网络安全的国际标准，它要求从概念阶段就开始做威胁分析和风险评估（TARA）。</p>
+
+<p>智能座舱的网络安全攻击面，比你想象的大得多：</p>
+
+<ul>
+  <li><strong>外部接口</strong>——Wi-Fi、蓝牙、4G/5G、USB、NFC</li>
+  <li><strong>内部通信</strong>——CAN、以太网、LIN、FlexRay</li>
+  <li><strong>应用层</strong>——第三方 App、OTA 升级、云端服务</li>
+  <li><strong>硬件层</strong>——调试接口（JTAG/SWD）、未锁定的 Bootloader</li>
+</ul>
+
+<p>我个人习惯用 STRIDE 模型来做威胁分析。STRIDE 是微软提出的，但用在汽车上也很好用：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>威胁类型</th>
+      <th>含义</th>
+      <th>座舱示例</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Spoofing（欺骗）</td>
+      <td>冒充合法实体</td>
+      <td>伪造 OTA 更新包</td>
+    </tr>
+    <tr>
+      <td>Tampering（篡改）</td>
+      <td>修改数据或代码</td>
+      <td>篡改仪表盘显示数据</td>
+    </tr>
+    <tr>
+      <td>Repudiation（抵赖）</td>
+      <td>否认操作</td>
+      <td>否认发送过恶意指令</td>
+    </tr>
+    <tr>
+      <td>Information Disclosure（信息泄露）</td>
+      <td>敏感数据被窃取</td>
+      <td>蓝牙配对密钥被读取</td>
+    </tr>
+    <tr>
+      <td>Denial of Service（拒绝服务）</td>
+      <td>系统不可用</td>
+      <td>CAN 总线被 flood 攻击</td>
+    </tr>
+    <tr>
+      <td>Elevation of Privilege（权限提升）</td>
+      <td>获得更高权限</td>
+      <td>从普通用户提权到 root</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="warning">
+  <strong>注意：</strong> 网络安全测试不是「测一次就完事」。ISO 21434 要求持续监控和响应。我见过一个项目，上市前渗透测试全过了，结果半年后爆出一个蓝牙协议栈漏洞，不得不紧急召回 OTA 修复。所以，安全测试要常态化。
+</div>
+
+<h3>11.3 渗透测试</h3>
+
+<p>渗透测试，说白了就是「请黑客来打你的系统」。不过这个黑客是你自己人。渗透测试分黑盒、白盒、灰盒三种，我简单说一下区别：</p>
+
+<ul>
+  <li><strong>黑盒测试</strong>——测试人员不知道内部结构，模拟外部攻击者</li>
+  <li><strong>白盒测试</strong>——测试人员有完整源码和架构文档，做深度审计</li>
+  <li><strong>灰盒测试</strong>——介于两者之间，知道部分信息</li>
+</ul>
+
+<p>我建议座舱项目至少做两轮渗透测试：第一轮在开发中期（灰盒），第二轮在 release 前（黑盒）。为什么？因为黑盒测试更贴近真实攻击场景，但发现的问题往往更难修。灰盒测试能提前暴露架构层面的漏洞。</p>
+
+<p>渗透测试的常见切入点，我列几个：</p>
+
+<ol>
+  <li><strong>USB 接口</strong>——插入恶意 U 盘，尝试自动运行脚本</li>
+  <li><strong>蓝牙配对</strong>——尝试暴力破解 PIN 码，或者重放攻击</li>
+  <li><strong>Wi-Fi 通信</strong>——中间人攻击，抓取未加密的流量</li>
+  <li><strong>OTA 更新</strong>——伪造更新包，尝试签名绕过</li>
+  <li><strong>调试接口</strong>——通过 JTAG/SWD 读取固件或内存</li>
+</ol>
+
+<p>我曾经在一个项目里做渗透测试，发现了一个很有意思的漏洞：座舱的 Wi-Fi 模块在连接某些路由器时，会泄露 SSID 和密码的哈希值。攻击者只要在附近放一个恶意热点，就能拿到密码。后来我们修复的方式是，在 Wi-Fi 驱动层加了一个随机 MAC 地址功能，并且对密码哈希做了加盐处理。</p>
+
+<div class="highlight">
+  <strong>渗透测试的关键指标：</strong>
+  <ul>
+    <li>漏洞数量及严重等级（Critical / High / Medium / Low）</li>
+    <li>从发现到修复的平均时间（MTTR）</li>
+    <li>攻击路径的复杂度（需要几步才能攻破）</li>
+    <li>是否有未修复的已知漏洞（CVEs）</li>
+  </ul>
+</div>
+
+<h3>11.4 数据隐私合规</h3>
+
+<p>数据隐私这块，最近几年越来越严。欧盟有 GDPR，中国有《个人信息保护法》和《数据安全法》。智能座舱收集的数据太多了——驾驶员的面部信息、语音数据、位置轨迹、驾驶行为、甚至心率（如果座椅有心率监测）。</p>
+
+<p>数据隐私合规测试，我把它分成三个层面：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>层面</th>
+      <th>测试内容</th>
+      <th>常见问题</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>数据收集</td>
+      <td>是否明确告知用户收集了哪些数据？是否获得同意？</td>
+      <td>隐私政策藏在三级菜单里，用户根本看不到</td>
+    </tr>
+    <tr>
+      <td>数据存储</td>
+      <td>敏感数据是否加密？本地存储是否可被其他 App 读取？</td>
+      <td>面部图像以明文存储在 SD 卡上</td>
+    </tr>
+    <tr>
+      <td>数据传输</td>
+      <td>上传云端的数据是否加密？是否最小化传输？</td>
+      <td>位置数据每 10 秒上传一次，频率过高</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我个人习惯在测试用例里加一条「隐私检查清单」。比如：</p>
+
+<ul>
+  <li>检查首次启动时是否有隐私弹窗</li>
+  <li>检查隐私政策是否包含数据用途、存储期限、第三方共享</li>
+  <li>检查用户是否可以删除自己的数据</li>
+  <li>检查敏感数据（人脸、声纹）是否在本地处理，不上传云端</li>
+  <li>检查数据脱敏是否到位（比如车牌号、人脸模糊处理）</li>
+</ul>
+
+<div class="tip">
+  <strong>避坑指南：</strong> 我曾经遇到一个项目，隐私弹窗做了，但用户点了「不同意」之后，App 直接闪退。这其实违反了 GDPR 的「数据最小化」原则——用户不同意，系统应该降级运行，而不是崩溃。所以测试时一定要覆盖「拒绝授权」的场景。
+</div>
+
+<p>数据隐私合规还有一个容易被忽略的点：<strong>第三方 SDK</strong>。座舱里集成了很多第三方服务——地图、语音、支付、音乐。这些 SDK 可能也在收集数据。你需要确认每个 SDK 的数据收集行为是否符合合规要求。我建议做一个第三方 SDK 数据流审计，画出每一条数据从收集到删除的完整链路。</p>
+
+<p>好了，安全测试的四个维度就讲到这里。功能安全、网络安全、渗透测试、数据隐私合规，每一个都不能少。测试策略上，我建议按优先级来：先搞定功能安全（因为涉及人身安全），再铺网络安全和渗透测试，最后做数据隐私合规。但时间上要并行推进，别等一个做完再做下一个。</p>
+        <div class="footer-nav">
+            <a href="10.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="12.html">下一章 →</a>
+        </div>
+        <footer>想要更多资料，咨询可可微信keke90988</footer>
+    </div>
+</div>
+</div>
+</body>
+</html>
